@@ -10,3 +10,6 @@ revit-mcp/
 # Temp / machine-specific
 *.addin
 *.tmp
+
+# Claude Code session files
+.claude/
