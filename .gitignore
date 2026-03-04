@@ -1,0 +1,12 @@
+# Sub-repos — each managed independently
+AppSheetCatalog/
+AppsScript/
+BatchExportV1/
+BatchExportV2/
+PostProcess/
+Tools/
+revit-mcp/
+
+# Temp / machine-specific
+*.addin
+*.tmp
