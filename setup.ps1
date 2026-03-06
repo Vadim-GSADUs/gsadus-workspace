@@ -9,13 +9,12 @@
 $Root = "C:\GSADUs"
 
 $repos = @(
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
-    @{ Url = "git@github.com:Vadim-GSADUs/GSADUs.Revit.Addin.git";        Path = "BatchExportV1" },
-    @{ Url = "git@github.com:Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
-    @{ Url = "git@github.com:oakplank/RevitMCP.git";                      Path = "revit-mcp" }
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
+    @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.Addin.git";        Path = "BatchExportV1" },
+    @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" }
 )
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }

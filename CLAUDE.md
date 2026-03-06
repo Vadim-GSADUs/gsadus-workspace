@@ -13,7 +13,6 @@ C:\GSADUs\
 ├── PostProcess\
 │   └── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
-├── revit-mcp\            oakplank/RevitMCP             Third-party Revit MCP server
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
