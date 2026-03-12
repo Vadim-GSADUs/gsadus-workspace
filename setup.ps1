@@ -9,13 +9,13 @@
 $Root = "C:\GSADUs"
 
 $repos = @(
-    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
-    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
-    @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.Addin.git";        Path = "BatchExportV1" },
-    @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
-    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
-    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
-    @{ Url = "https://github.com/oakplank/RevitMCP.git";                      Path = "revit-mcp" }
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
+    @{ Url = "git@github.com:Vadim-GSADUs/GSADUs.Revit.Addin.git";        Path = "BatchExportV1" },
+    @{ Url = "git@github.com:Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
+    @{ Url = "git@github.com:oakplank/RevitMCP.git";                      Path = "revit-mcp" }
 )
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }
@@ -25,6 +25,26 @@ function Write-Skip { param($msg) Write-Host "    [skip]  $msg" -ForegroundColor
 
 Write-Step "GSADUs Workspace Setup — Root: $Root"
 
+# ── Step 1: Initialize C:\GSADUs as the workspace repo ───────────────────────
+Write-Step "Workspace root repo (gsadus-workspace)"
+$workspaceGit = Join-Path $Root ".git"
+if (Test-Path $workspaceGit) {
+    Write-Pull "C:\GSADUs (gsadus-workspace)"
+    Push-Location $Root
+    git pull
+    Pop-Location
+} else {
+    Write-Ok "Initializing C:\GSADUs as gsadus-workspace"
+    Push-Location $Root
+    git init
+    git remote add origin git@github.com:Vadim-GSADUs/gsadus-workspace.git
+    git fetch origin
+    git reset --hard origin/main
+    Pop-Location
+}
+
+# ── Step 2: Clone / pull all sub-repos ───────────────────────────────────────
+Write-Step "Sub-repos"
 foreach ($repo in $repos) {
     $localPath = Join-Path $Root $repo.Path
     if (Test-Path (Join-Path $localPath ".git")) {
@@ -41,6 +61,37 @@ foreach ($repo in $repos) {
         git clone $repo.Url $localPath
     }
 }
+
+# ── Step 3: Install PowerShell profile (wip / unwip) ─────────────────────────
+Write-Step "PowerShell profile (wip / unwip aliases)"
+$profileDir = Split-Path $PROFILE -Parent
+if (-not (Test-Path $profileDir)) {
+    New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+}
+$wipBlock = @'
+
+# Git WIP shortcuts — sync work between office and home PCs
+function wip {
+    git add -A
+    git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')"
+    git push
+}
+
+function unwip {
+    git pull
+    git reset HEAD~1
+}
+'@
+if (-not (Test-Path $PROFILE)) {
+    Set-Content $PROFILE $wipBlock
+    Write-Ok "Created profile at $PROFILE"
+} elseif (-not (Select-String -Path $PROFILE -Pattern "function wip" -Quiet)) {
+    Add-Content $PROFILE $wipBlock
+    Write-Ok "Added wip/unwip to existing profile at $PROFILE"
+} else {
+    Write-Skip "wip/unwip already in profile — skipped"
+}
+. $PROFILE
 
 Write-Host ""
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
