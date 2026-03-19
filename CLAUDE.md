@@ -11,7 +11,8 @@ C:\GSADUs\
 ├── BatchExportV1\        GSADUs.Revit.Addin            Revit addin — legacy batch export (V1)
 ├── BatchExportV2\        GSADUs.Revit.BatchExport      Revit addin — current batch export (V2)
 ├── PostProcess\
-│   └── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
+│   ├── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
+│   └── PNGTools\         gsadus-png-tools              Batch PNG crop, rename, and audit tool
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace

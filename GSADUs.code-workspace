@@ -5,8 +5,8 @@
 		{ "path": "BatchExportV1" },
 		{ "path": "BatchExportV2" },
 		{ "path": "PostProcess/DigitalDarkroom" },
+		{ "path": "PostProcess/PNGTools" },
 		{ "path": "Tools" },
-		{ "path": "revit-mcp" },
 		{ "path": "G:/Shared drives/GSADUs Projects" },
 		{ "path": "G:/Shared drives/GSDE Projects" }
 	]

@@ -14,6 +14,7 @@ $repos = @(
     @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.Addin.git";        Path = "BatchExportV1" },
     @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" }
 )
 
@@ -62,14 +63,28 @@ foreach ($repo in $repos) {
 }
 
 # ── Step 3: Install PowerShell profile (wip / unwip) ─────────────────────────
-Write-Step "PowerShell profile (wip / unwip aliases)"
+Write-Step "PowerShell profile (wip / unwip)"
 $profileDir = Split-Path $PROFILE -Parent
 if (-not (Test-Path $profileDir)) {
     New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
 }
 $wipBlock = @'
+# Git WIP shortcuts - sync work between office and home PCs
+$GSADUsRoot = "C:\GSADUs"
 
-# Git WIP shortcuts — sync work between office and home PCs
+function Get-WipRepos {
+    $repos = @()
+    if (Test-Path "$GSADUsRoot\.git") { $repos += $GSADUsRoot }
+    Get-ChildItem $GSADUsRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        if (Test-Path "$($_.FullName)\.git") { $repos += $_.FullName }
+        Get-ChildItem $_.FullName -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path "$($_.FullName)\.git") { $repos += $_.FullName }
+        }
+    }
+    $repos
+}
+
+# -- single-repo commands (run from inside a repo) ----------------------------
 function wip {
     git add -A
     git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')"
@@ -78,17 +93,77 @@ function wip {
 
 function unwip {
     git pull
-    git reset HEAD~1
+    $msg = git log -1 --format="%s" 2>$null
+    if ($msg -match "^wip:") { git reset HEAD~1 }
+    else { Write-Host "  (last commit is not a wip - pull only)" -ForegroundColor DarkGray }
+}
+
+# -- all-repo commands (run from anywhere) ------------------------------------
+function wip-all {
+    foreach ($repo in Get-WipRepos) {
+        Push-Location $repo
+        $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
+        if (-not $rel) { $rel = "." }
+        $dirty = git status --porcelain 2>$null
+        if ($dirty) {
+            Write-Host "  wip  $rel" -ForegroundColor Cyan
+            git add -A
+            git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')" -q
+            git push -q
+        } else {
+            Write-Host "  skip $rel (nothing to commit)" -ForegroundColor DarkGray
+        }
+        Pop-Location
+    }
+}
+
+function unwip-all {
+    foreach ($repo in Get-WipRepos) {
+        Push-Location $repo
+        $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
+        if (-not $rel) { $rel = "." }
+        Write-Host "  unwip $rel" -ForegroundColor Cyan
+        git pull -q
+        $msg = git log -1 --format="%s" 2>$null
+        if ($msg -match "^wip:") { git reset HEAD~1 }
+        Pop-Location
+    }
+}
+
+function end-day {
+    Write-Host ""
+    Write-Host "Saving work across all repos..." -ForegroundColor Cyan
+    wip-all
+    Write-Host ""
+    Write-Host "PC shuts down in 15 min.  Run 'shutdown /a' to cancel." -ForegroundColor Yellow
+    shutdown /s /t 900
+}
+
+# -- startup task helpers -----------------------------------------------------
+function Register-StartupUnwip {
+    $profilePath = $PROFILE
+    $cmd = ". '$profilePath'; unwip-all"
+    $action   = New-ScheduledTaskAction -Execute "pwsh" -Argument "-NoExit -Command $cmd"
+    $trigger  = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
+    Register-ScheduledTask -TaskName "GSADUs-unwip-all" -Action $action `
+        -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null
+    Write-Host "Startup unwip registered. Opens a terminal on next login." -ForegroundColor Green
+}
+
+function Unregister-StartupUnwip {
+    Unregister-ScheduledTask -TaskName "GSADUs-unwip-all" -Confirm:$false -ErrorAction SilentlyContinue
+    Write-Host "Startup unwip removed." -ForegroundColor Yellow
 }
 '@
 if (-not (Test-Path $PROFILE)) {
     Set-Content $PROFILE $wipBlock
     Write-Ok "Created profile at $PROFILE"
-} elseif (-not (Select-String -Path $PROFILE -Pattern "function wip" -Quiet)) {
-    Add-Content $PROFILE $wipBlock
-    Write-Ok "Added wip/unwip to existing profile at $PROFILE"
+} elseif (-not (Select-String -Path $PROFILE -Pattern "function wip-all" -Quiet)) {
+    Set-Content $PROFILE $wipBlock
+    Write-Ok "Upgraded wip/unwip in profile at $PROFILE"
 } else {
-    Write-Skip "wip/unwip already in profile — skipped"
+    Write-Skip "wip/unwip already up to date — skipped"
 }
 . $PROFILE
 
