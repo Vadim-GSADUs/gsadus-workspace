@@ -112,11 +112,15 @@ function wip-all {
         Push-Location $repo
         $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
         if (-not $rel) { $rel = "." }
-        $dirty = git status --porcelain 2>$null
+        $dirty    = git status --porcelain 2>$null
+        $unpushed = git log "@{u}..HEAD" --oneline 2>$null
         if ($dirty) {
             Write-Host "  wip  $rel" -ForegroundColor Cyan
             git add -A
             git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')" -q
+            git push --force-with-lease -q
+        } elseif ($unpushed) {
+            Write-Host "  push $rel (unpushed commits)" -ForegroundColor Yellow
             git push --force-with-lease -q
         } else {
             Write-Host "  skip $rel (nothing to commit)" -ForegroundColor DarkGray
