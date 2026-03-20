@@ -73,13 +73,21 @@ $wipBlock = @'
 $GSADUsRoot = "C:\GSADUs"
 
 function Get-WipRepos {
-    $repos = @()
-    if (Test-Path "$GSADUsRoot\.git") { $repos += $GSADUsRoot }
+    # Only include repos owned by Vadim-GSADUs (skips third-party forks)
+    $candidates = @()
+    if (Test-Path "$GSADUsRoot\.git") { $candidates += $GSADUsRoot }
     Get-ChildItem $GSADUsRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
-        if (Test-Path "$($_.FullName)\.git") { $repos += $_.FullName }
+        if (Test-Path "$($_.FullName)\.git") { $candidates += $_.FullName }
         Get-ChildItem $_.FullName -Directory -ErrorAction SilentlyContinue | ForEach-Object {
-            if (Test-Path "$($_.FullName)\.git") { $repos += $_.FullName }
+            if (Test-Path "$($_.FullName)\.git") { $candidates += $_.FullName }
         }
+    }
+    $repos = @()
+    foreach ($c in $candidates) {
+        Push-Location $c
+        $url = git remote get-url origin 2>$null
+        if ($url -match "Vadim-GSADUs") { $repos += $c }
+        Pop-Location
     }
     $repos
 }
@@ -109,7 +117,7 @@ function wip-all {
             Write-Host "  wip  $rel" -ForegroundColor Cyan
             git add -A
             git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')" -q
-            git push -q
+            git push --force-with-lease -q
         } else {
             Write-Host "  skip $rel (nothing to commit)" -ForegroundColor DarkGray
         }
