@@ -96,7 +96,7 @@ function Get-WipRepos {
 function wip {
     git add -A
     git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')"
-    git push
+    git push --force-with-lease
 }
 
 function unwip {
@@ -171,7 +171,7 @@ function Unregister-StartupUnwip {
 if (-not (Test-Path $PROFILE)) {
     Set-Content $PROFILE $wipBlock
     Write-Ok "Created profile at $PROFILE"
-} elseif (-not (Select-String -Path $PROFILE -Pattern "function wip-all" -Quiet)) {
+} elseif (-not (Select-String -Path $PROFILE -Pattern "force-with-lease" -Quiet)) {
     Set-Content $PROFILE $wipBlock
     Write-Ok "Upgraded wip/unwip in profile at $PROFILE"
 } else {
