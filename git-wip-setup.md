@@ -2,32 +2,20 @@
 
 Quick commands to save and sync work-in-progress between office and home PCs.
 
-## Setup (run once per PC)
+> **Note:** The PowerShell profile syncs via OneDrive automatically. You only need the manual setup below on a brand-new PC that has never signed into OneDrive yet.
 
-### PowerShell 7 (recommended — what you use day-to-day)
+---
+
+## Setup (run once on a new PC before OneDrive syncs)
 
 Open PowerShell and run:
 
 ```powershell
 New-Item -ItemType File -Force $PROFILE
-Add-Content $PROFILE "`nfunction wip { git add -A; git commit -m \"wip: \$(Get-Date -Format 'yyyyMMdd-HHmm')\"; git push }"
-Add-Content $PROFILE "`nfunction unwip { git pull; git reset HEAD~1 }"
+Add-Content $PROFILE "`nfunction wip { git add -A; git commit -m \"wip: \$(Get-Date -Format 'yyyyMMdd-HHmm')\"; git push --force-with-lease }"
+Add-Content $PROFILE "`nfunction unwip { git pull; `$msg = git log -1 --format='%s' 2>`$null; if (`$msg -match '^wip:') { git reset HEAD~1 } else { Write-Host '  (last commit is not a wip - pull only)' -ForegroundColor DarkGray } }"
 . $PROFILE
 ```
-
-> If your profile is in OneDrive (default), it syncs to your other PCs automatically — no setup needed there.
-
-### Git Bash (if you use it instead)
-
-Open Git Bash and paste this:
-
-```bash
-echo "alias wip='git add -A && git commit -m \"wip: \$(date +%Y%m%d-%H%M)\" && git push'" >> ~/.bashrc
-echo "alias unwip='git pull && git reset HEAD~1'" >> ~/.bashrc
-source ~/.bashrc
-```
-
-That's it. The commands load automatically every time you open a new terminal.
 
 ---
 
@@ -35,27 +23,33 @@ That's it. The commands load automatically every time you open a new terminal.
 
 ### Leaving the office
 Navigate to your project folder, then:
-```bash
+```powershell
 wip
 ```
-Stages all changes, commits with a timestamp (`wip: 20260311-1742`), and pushes to GitHub.
+Stages all changes, commits with a timestamp (`wip: 20260311-1742`), and force-pushes to GitHub (safely — only succeeds if remote is exactly what you left it as).
 
 ### Arriving at home (or other PC)
 Navigate to your project folder, then:
-```bash
+```powershell
 unwip
 ```
-Pulls the latest, then un-commits the WIP so your changes are back as unsaved work — right where you left off.
+Pulls the latest, then un-commits the WIP (only if the latest commit is actually a wip) so your changes are back as unsaved work — right where you left off.
+
+---
+
+## Why `--force-with-lease`?
+
+After `unwip` resets a wip commit, your local branch is one commit behind remote. The next `wip` creates a new commit on that same base, which diverges from remote — a plain `git push` would fail. `--force-with-lease` replaces the old wip commit on remote, but **only if no one else has pushed in the meantime** (safe for single-user repos).
 
 ---
 
 ## The Golden Rule (avoid conflicts)
 
-> **Pull → Work → Commit → Push** — tight loop, every session, every PC.
+> **Pull → Work → Wip → Switch PC** — tight loop, every session.
 
-- Always `git pull` before starting work on any PC
-- Always push before switching PCs (`wip` if mid-session)
-- Never let commits sit locally while working on another machine
+- Always `unwip` when arriving at a PC before starting work
+- Always `wip` before switching PCs
+- Never work on two PCs at the same time
 
 ---
 
@@ -65,11 +59,13 @@ Pulls the latest, then un-commits the WIP so your changes are back as unsaved wo
 ```bash
 git add -A
 git commit -m "wip: 20260311-1742"
-git push
+git push --force-with-lease
 ```
 
 **Resuming WIP:**
 ```bash
 git pull
+# Only reset if the latest commit is a wip:
+git log -1 --pretty=%s   # check the message first
 git reset HEAD~1
 ```
