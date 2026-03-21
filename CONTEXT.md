@@ -148,6 +148,13 @@ Revit Tools  ←→ Software Dev ←→ Integration (touches all)
 
 Changes in one domain ripple to others. Always check connected domains.
 
+## Cross-PC Setup Rules
+
+- `setup.ps1` is the source of truth for new PC setup — clones all repos and installs the PowerShell profile
+- **Whenever profile functions (`wip`, `unwip`, etc.) change, `setup.ps1` must be updated in the same commit**
+- The profile lives in OneDrive and syncs automatically — `setup.ps1` is only needed on a PC that hasn't signed into OneDrive yet
+- Version check in `setup.ps1` detects stale profiles by looking for `force-with-lease` — update this marker if the check logic changes
+
 ## Decision Log
 
 | Date | Decision | Domains | Status |
