@@ -62,7 +62,12 @@ foreach ($repo in $repos) {
     }
 }
 
-# ── Step 3: Install PowerShell profile (wip / unwip) ─────────────────────────
+# ── Step 3: Git global config ────────────────────────────────────────────────
+Write-Step "Git global config"
+git config --global core.safecrlf false
+Write-Ok "core.safecrlf = false (suppress LF/CRLF warnings)"
+
+# ── Step 4: Install PowerShell profile (wip / unwip) ─────────────────────────
 Write-Step "PowerShell profile (wip / unwip)"
 $profileDir = Split-Path $PROFILE -Parent
 if (-not (Test-Path $profileDir)) {
