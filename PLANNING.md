@@ -3,7 +3,7 @@
 > **Purpose:** Analytical working document for tracking pipeline gaps, integration opportunities, feature ideas, and automation candidates.
 > Companion to `CONTEXT.md` (which describes *what exists*) — this file describes *what's missing, broken, or worth building next*.
 > Intended audience: human developers + AI discovery/planning agents.
-> Last updated: 2026-03-21
+> Last updated: 2026-03-22
 
 ---
 
@@ -67,11 +67,11 @@ Gaps are broken or missing connections in the end-to-end image pipeline. These a
 **Status:** `[NEEDS INVESTIGATION]` — Discovery agent should read Camera Manager/Runner scripts and document
 **Next action:** Read Camera tool scripts; document view selection logic, output paths, filename format
 
-### GAP-07 — `vision_engine.py` Intent Lost
+### GAP-07 — `vision_engine.py` Intent Identified — Not Yet Implemented
 **In:** DigitalDarkroom (`PostProcess/DigitalDarkroom/core/vision_engine.py`)
-**Impact:** Low (stub — not blocking anything)
-**Detail:** File exists as a stub. Original intent unknown — possibly quality filtering, auto-selection of best render per matrix cell, or validation. If not planned for near term, consider removing to reduce confusion.
-**Next action:** Decision — define intent and implement, or delete stub
+**Impact:** Low (stub — not blocking anything currently)
+**Detail:** Original intent is now defined — see INT-06 below. The stub should eventually become the home for the render-worthiness classifier. Not urgent; does not block the March 2026 deadline.
+**Next action:** Implement once INT-06 approach is validated (see INT-06)
 
 ---
 
@@ -99,6 +99,18 @@ The Design Bundles pushbutton has its own internal modules (`mapping_storage.py`
 `rendered_matrix.js` tracks which model × style combos have been rendered. This coverage data could drive DigitalDarkroom's batch queue automatically — only rendering missing combinations.
 **Value:** Eliminates manual tracking of what still needs rendering
 **Effort:** Medium (read matrix from GSheet, generate queue config for DigitalDarkroom)
+
+### INT-06 — Render-Worthiness Classifier (Prototype Built, Not Validated)
+**Between:** Revit image export → DigitalDarkroom render queue
+**Status:** Prototype only — untested, not part of active workflow
+**Problem:** 364 exterior perspective images were exported (4 angles × 91 models). Not all angles show a primary entry feature (front door, covered porch, patio with sliding/French doors). Sending unworthy images to DigitalDarkroom wastes fal.ai API credits on angles that would never be used.
+**Proposed solution:** Claude vision API classifier — sends each image to `claude-sonnet-4-6` with a structured prompt, gets YES/NO + confidence + reason per image, writes a `render_audit.csv` for human review before any render batch is submitted.
+**Prototype location:** `C:\GSADUs\PostProcess\PNGTools\PNG_RenderAudit.py` + `core/render_audit.py`
+**Trial status:** Script runs correctly; halted on first test due to no Anthropic API credits on the test account. Accuracy not yet validated.
+**Cost estimate (when ready to test):** ~$1–2 for full 364-image run at Sonnet pricing; ~$0.30 with Haiku.
+**Filename convention note:** Camera angle is encoded in the filename (e.g., `A400-M3 Ext_225.png` = 225° = SW). Could be used as a cheap pre-filter once per-model entry orientations are known, reducing vision API calls by 40–60%.
+**Natural long-term home:** `vision_engine.py` in DigitalDarkroom (currently a stub).
+**Next action:** Add Anthropic API credits → run 20-image trial → review accuracy → decide whether to productionize or drop.
 
 ### INT-05 — Selection Sets V2 → Design Bundles Coordination
 Currently separate tools. A coordinated workflow would: (1) select a model set, (2) apply a bundle, (3) trigger camera export — all from a single pyRevit command.
