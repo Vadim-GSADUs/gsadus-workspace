@@ -11,7 +11,7 @@
 | Device | Tailscale Name | Tailscale IP | Role |
 |--------|---------------|--------------|------|
 | Work PC | `gsadus-vadim` | `100.92.227.106` | Configured 2026-03-24 |
-| Home PC | _(pending)_ | _(pending)_ | Configure when back |
+| Home PC | `vg-home` | `100.119.245.116` | Configured 2026-03-24 |
 
 ---
 
@@ -30,26 +30,26 @@
 | 7 | Set default SSH shell to pwsh | ✅ Done — `C:\Program Files\PowerShell\7\pwsh.exe` |
 | 8 | Set up SSH key auth (administrators_authorized_keys) | ✅ Done — key auth confirmed, no password needed |
 | 9 | Test SSH locally (`ssh localhost`) | ✅ Done — pwsh session opened successfully |
-| 10 | Install Chrome Remote Desktop + set PIN | ⬜ Next |
-| 11 | Test CRD from phone | ⬜ Pending |
-| 12 | Reboot + verify all services auto-start | ⬜ Pending |
-| 13 | Lock screen (Win+L) — do NOT sign out | ⬜ Before leaving |
+| 10 | Install Chrome Remote Desktop + set PIN | ✅ Done |
+| 11 | Test CRD from phone | ✅ Done |
+| 12 | Reboot + verify all services auto-start | ✅ Done |
+| 13 | Lock screen (Win+L) — do NOT sign out | ✅ Done |
 
-### Home PC — pending physical access
+### Home PC (`vg-home`) — 2026-03-24
 
 | # | Step | Status |
 |---|------|--------|
-| 1 | Install Tailscale (same account) | ⬜ Pending |
-| 2 | Install OpenSSH Server + set default shell to pwsh | ⬜ Pending |
-| 3 | Set up SSH key auth (generate key, add work PC's public key) | ⬜ Pending |
-| 4 | Install Chrome Remote Desktop + set PIN | ⬜ Pending |
-| 5 | Disable sleep + hibernate | ⬜ Pending |
-| 6 | Set `NoAutoRebootWithLoggedOnUsers` registry key | ⬜ Pending |
-| 7 | Test: `ssh gsadus-vadim` → pwsh on work PC | ⬜ Pending |
-| 8 | Test: CRD → connect to work PC from browser | ⬜ Pending |
-| 9 | Set up SSH keys bidirectionally | ⬜ Pending |
-| 10 | Reboot → verify everything auto-starts | ⬜ Pending |
-| 11 | Update `end-day` in `profile.ps1` — replace shutdown with screen lock | ⬜ Pending |
+| 1 | Install Tailscale (same account) | ✅ Done — `vg-home` / `100.119.245.116` |
+| 2 | Install OpenSSH Server + set default shell to pwsh | ✅ Done |
+| 3 | Set up SSH key auth (generate key, add work PC's public key) | ✅ Done |
+| 4 | Install Chrome Remote Desktop + set PIN | ✅ Done — both devices registered |
+| 5 | Disable sleep + hibernate | ✅ Done |
+| 6 | Set `NoAutoRebootWithLoggedOnUsers` registry key | ✅ Done |
+| 7 | Test: `ssh Vadim@gsadus-vadim` → pwsh on work PC | ✅ Done |
+| 8 | Test: CRD → connect to work PC from browser | ✅ Done |
+| 9 | Set up SSH keys bidirectionally | ✅ Done — use `ssh User@vg-home` from work PC |
+| 10 | Reboot → verify everything auto-starts | ✅ Done — sshd Running/Automatic |
+| 11 | Update `end-day` in `profile.ps1` — replace shutdown with screen lock | ✅ Done |
 
 ---
 
@@ -103,11 +103,10 @@ Tailscale creates a private encrypted mesh VPN between your devices. Each PC get
 - Tailscale IP: `100.92.227.106`
 - Shows as Connected in admin console: https://login.tailscale.com/admin/machines
 
-### Home PC — do when back
-- [ ] Install Tailscale (same account)
-- [ ] Verify machine appears in admin console
-- [ ] Note Tailscale IP: ___________________
-- [ ] Test: `ping gsadus-vadim` (should resolve via MagicDNS)
+### Home PC — ✅ Complete
+- Machine name: `vg-home`
+- Tailscale IP: `100.119.245.116`
+- Both machines visible in admin console
 
 ### Edge cases
 - **Ethernet preferred over Wi-Fi** for unattended PCs — Wi-Fi reconnection after display-off can be flaky
@@ -153,6 +152,7 @@ Tailscale creates a private encrypted mesh VPN between your devices. Each PC get
   ```
 - [ ] Add work PC's public key to home PC's `administrators_authorized_keys` (same pattern)
 - [ ] Test cross-PC: `ssh Vadim@gsadus-vadim` → pwsh session on work PC
+  > Note: home PC username is `User` (not `Vadim`) — use `ssh User@vg-home` from work PC
 
 ### SSH notes
 - Admin accounts on Windows use `C:\ProgramData\ssh\administrators_authorized_keys` — NOT `~/.ssh/authorized_keys`
@@ -167,7 +167,7 @@ Tailscale creates a private encrypted mesh VPN between your devices. Each PC get
 ```powershell
 # Interactive session on the other PC
 ssh Vadim@gsadus-vadim     # from home → work
-ssh Vadim@<home-ip>        # from work → home
+ssh User@vg-home           # from work → home (home PC username is "User")
 
 # One-liner to run wip-all remotely without opening a full session
 ssh Vadim@gsadus-vadim "pwsh -Command '. C:\GSADUs\profile.ps1; wip-all'"
@@ -180,12 +180,9 @@ ssh Vadim@gsadus-vadim "pwsh -Command '. C:\GSADUs\profile.ps1; wip-all'"
 ### Concept
 Full GUI remote desktop via browser. Uses Google account — no IP config needed. Good fallback when you need to see the screen or interact with GUI apps.
 
-### Work PC — ⬜ In progress
-- [ ] Go to https://remotedesktop.google.com/access
-- [ ] Sign in with Google account → "Set up Remote Access" → "Turn on"
-- [ ] Download + install host app, set a PIN (6+ digits)
-- [ ] Verify machine appears under "My Computers"
-- [ ] Test from phone before leaving
+### Work PC — ✅ Complete
+- Installed, PIN set, verified from phone
+- Reboot confirmed: all services auto-start ✅
 
 ### Home PC — do when back
 - [ ] Install Chrome Remote Desktop host (same Google account)
