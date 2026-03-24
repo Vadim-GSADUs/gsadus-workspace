@@ -93,8 +93,8 @@ function end-day {
     Write-Host "Saving work across all repos..." -ForegroundColor Cyan
     wip-all
     Write-Host ""
-    Write-Host "PC shuts down in 15 min.  Run 'shutdown /a' to cancel." -ForegroundColor Yellow
-    shutdown /s /t 900
+    Write-Host "Locking screen." -ForegroundColor Yellow
+    rundll32.exe user32.dll,LockWorkStation
 }
 
 # -- startup task helpers -----------------------------------------------------
