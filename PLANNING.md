@@ -200,6 +200,45 @@ Before building anything scheduled: write a single prompt that can be run manual
 
 ---
 
+## Dev Tooling — Planned Improvements
+
+### TOOL-01 — Restructure wip/unwip: profile.ps1 replaces setup.ps1 profile logic
+
+**Problem (why setup.ps1 was a mistake for profile management):**
+`setup.ps1` did two unrelated things: clone repos (run once, on a new PC) and write/upgrade the PowerShell profile (run every time functions change). This created a chicken-and-egg problem — the script that manages syncing was itself being synced, and required a manual re-run after every pull to apply changes. The version-check logic (`Select-String -Pattern "skip ci"`) was fragile and kept breaking across sessions. The result was a constant loop of "sync → re-run setup → verify → repeat."
+
+**Proposed solution:**
+
+1. **`$PROFILE` (one-time, per PC)** contains only one line:
+   ```powershell
+   . C:\GSADUs\profile.ps1
+   ```
+   Set once manually on each PC. Never touched again.
+
+2. **`profile.ps1`** lives in this repo as the source of truth for all wip/unwip/end-day functions.
+   - Synced automatically with everything else via wip/unwip
+   - Next shell start after a sync picks up changes — no re-run needed
+   - No version checking, no pattern matching, no upgrade logic
+
+3. **`setup.ps1` becomes 10 lines** — just clones repos on a fresh PC. Never needs to change.
+
+4. **`SETUP.md`** documents the one-time bootstrap (install git/pwsh/gh, run setup.ps1, add the dot-source line to `$PROFILE`).
+
+**Implementation steps:**
+- [ ] Extract wip/unwip/end-day/helper functions from setup.ps1 into `profile.ps1`
+- [ ] Strip setup.ps1 down to repo-cloning only
+- [ ] Update `$PROFILE` on both PCs to dot-source `profile.ps1`
+- [ ] Create `SETUP.md` with bootstrap instructions
+- [ ] Delete version-check logic from setup.ps1
+- [ ] Test: modify profile.ps1 → wip → switch PC → unwip → restart shell → verify new functions load
+
+**Also fix wip/unwip logic (do alongside this):**
+- `wip` becomes a rolling commit: if last commit is wip, reset HEAD~1 first, then recommit all changes. Keeps history clean — always exactly one wip commit on top.
+- `unwip` just pulls — no reset. Leaves repo at wip commit cleanly. No unstaged changes.
+- `unwip` stash-wraps the pull to handle dirty working tree gracefully.
+
+---
+
 ## Resolved Items
 
 *(Move items here from Gaps/Opportunities when closed, with resolution date and brief note)*

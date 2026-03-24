@@ -100,15 +100,21 @@ function Get-WipRepos {
 # -- single-repo commands (run from inside a repo) ----------------------------
 function wip {
     git add -A
-    git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')"
+    git commit --no-verify --no-gpg-sign -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm') [skip ci]"
     git push --force-with-lease
 }
 
 function unwip {
+    git fetch -q 2>$null
+    $ahead = git log "HEAD..@{u}" --oneline 2>$null
+    if (-not $ahead) {
+        Write-Host "  (nothing new on remote — skipped)" -ForegroundColor DarkGray
+        return
+    }
     git pull
     $msg = git log -1 --format="%s" 2>$null
     if ($msg -match "^wip:") { git reset HEAD~1 }
-    else { Write-Host "  (last commit is not a wip - pull only)" -ForegroundColor DarkGray }
+    else { Write-Host "  (last commit is not a wip — pull only)" -ForegroundColor DarkGray }
 }
 
 # -- all-repo commands (run from anywhere) ------------------------------------
@@ -122,7 +128,7 @@ function wip-all {
         if ($dirty) {
             Write-Host "  wip  $rel" -ForegroundColor Cyan
             git add -A
-            git commit -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm')" -q
+            git commit --no-verify --no-gpg-sign -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm') [skip ci]" -q
             git push --force-with-lease -q
         } elseif ($unpushed) {
             Write-Host "  push $rel (unpushed commits)" -ForegroundColor Yellow
@@ -139,6 +145,13 @@ function unwip-all {
         Push-Location $repo
         $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
         if (-not $rel) { $rel = "." }
+        git fetch -q 2>$null
+        $ahead = git log "HEAD..@{u}" --oneline 2>$null
+        if (-not $ahead) {
+            Write-Host "  skip $rel (up to date)" -ForegroundColor DarkGray
+            Pop-Location
+            continue
+        }
         Write-Host "  unwip $rel" -ForegroundColor Cyan
         git pull -q
         $msg = git log -1 --format="%s" 2>$null
@@ -176,7 +189,7 @@ function Unregister-StartupUnwip {
 if (-not (Test-Path $PROFILE)) {
     Set-Content $PROFILE $wipBlock
     Write-Ok "Created profile at $PROFILE"
-} elseif (-not (Select-String -Path $PROFILE -Pattern "force-with-lease" -Quiet)) {
+} elseif (-not (Select-String -Path $PROFILE -Pattern "skip ci" -Quiet)) {
     Set-Content $PROFILE $wipBlock
     Write-Ok "Upgraded wip/unwip in profile at $PROFILE"
 } else {
