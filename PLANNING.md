@@ -227,7 +227,7 @@ Before building anything scheduled: write a single prompt that can be run manual
 **Implementation steps:**
 - [x] Extract wip/unwip/end-day/helper functions from setup.ps1 into `profile.ps1`
 - [x] Strip setup.ps1 down to repo-cloning only
-- [x] Update `$PROFILE` on both PCs to dot-source `profile.ps1` (done on office PC; do on home PC after next unwip)
+- [x] Update `$PROFILE` on both PCs to dot-source `profile.ps1` (done on home PC; do on office PC after next unwip)
 - [x] Create `SETUP.md` with bootstrap instructions
 - [x] Delete version-check logic from setup.ps1
 - [ ] Test: modify profile.ps1 → wip → switch PC → unwip → restart shell → verify new functions load
