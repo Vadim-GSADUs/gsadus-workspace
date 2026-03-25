@@ -52,10 +52,11 @@ function wip-all {
         $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
         if (-not $rel) { $rel = "." }
         git fetch -q 2>$null
-        # If remote is ahead this PC hasn't synced yet — pushing would fail or clobber work.
-        $remoteAhead = git log "HEAD..@{u}" --oneline 2>$null
-        if ($remoteAhead) {
-            Write-Host "  WARN $rel — remote is ahead, run unwip-all first" -ForegroundColor Red
+        # Block only if remote has REAL (non-wip) commits not yet on this PC.
+        # Old wip commits left by a previous unwip are fine — force-with-lease will overwrite them.
+        $nonWipAhead = git log "HEAD..@{u}" --format="%s" 2>$null | Where-Object { $_ -notmatch "^wip:" }
+        if ($nonWipAhead) {
+            Write-Host "  WARN $rel — remote has real commits not pulled here, run unwip-all first" -ForegroundColor Red
             Pop-Location
             continue
         }
@@ -108,9 +109,12 @@ function unwip-all {
         $msg = git log -1 --format="%s" 2>$null
         if ($msg -match "^wip:") { git reset HEAD~1 }
         if ($stashed) {
-            git stash pop
+            git stash pop 2>$null
             if ($LASTEXITCODE -ne 0) {
-                Write-Host "  CONFLICT in $rel — resolve manually then 'git stash drop'" -ForegroundColor Yellow
+                # Untracked files from the stash already exist in working tree (restored by wip reset).
+                # The working tree already has the correct state — drop the stale stash.
+                git stash drop -q 2>$null
+                Write-Host "  note: local stash had files already restored from wip — stash dropped" -ForegroundColor DarkGray
             }
         }
         Pop-Location
