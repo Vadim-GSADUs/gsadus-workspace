@@ -51,18 +51,28 @@ function wip-all {
         Push-Location $repo
         $rel = $repo.Replace($GSADUsRoot, "").TrimStart("\")
         if (-not $rel) { $rel = "." }
+        git fetch -q 2>$null
+        # If remote is ahead this PC hasn't synced yet — pushing would fail or clobber work.
+        $remoteAhead = git log "HEAD..@{u}" --oneline 2>$null
+        if ($remoteAhead) {
+            Write-Host "  WARN $rel — remote is ahead, run unwip-all first" -ForegroundColor Red
+            Pop-Location
+            continue
+        }
         $dirty    = git status --porcelain 2>$null
         $unpushed = git log "@{u}..HEAD" --oneline 2>$null
         if ($dirty) {
             Write-Host "  wip  $rel" -ForegroundColor Cyan
             git add -A
             git commit --no-verify --no-gpg-sign -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm') [skip ci]" -q
-            git push --force-with-lease -q
+            git push --force-with-lease
+            if ($LASTEXITCODE -ne 0) { Write-Host "  ERROR: push failed for $rel" -ForegroundColor Red }
         } elseif ($unpushed) {
             Write-Host "  push $rel (unpushed commits)" -ForegroundColor Yellow
-            git push --force-with-lease -q
+            git push --force-with-lease
+            if ($LASTEXITCODE -ne 0) { Write-Host "  ERROR: push failed for $rel" -ForegroundColor Red }
         } else {
-            Write-Host "  skip $rel (nothing to commit)" -ForegroundColor DarkGray
+            Write-Host "  skip $rel (up to date)" -ForegroundColor DarkGray
         }
         Pop-Location
     }
@@ -80,18 +90,29 @@ function unwip-all {
             Pop-Location
             continue
         }
-        # Remove untracked files that would be overwritten by the incoming merge.
-        # Safe because git reset HEAD~1 restores them to the working tree afterwards.
-        $incoming = git diff --name-only HEAD "@{u}" 2>$null
-        foreach ($f in $incoming) {
-            if (git ls-files --others --exclude-standard $f 2>$null) {
-                Remove-Item (Join-Path $repo $f) -Force -ErrorAction SilentlyContinue
-            }
+        # Stash any local state (modified + untracked) so the pull always succeeds cleanly.
+        $stashed = $false
+        $dirty = git status --porcelain 2>$null
+        if ($dirty) {
+            git stash --include-untracked -q
+            $stashed = $true
         }
         Write-Host "  unwip $rel" -ForegroundColor Cyan
         git pull -q
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ERROR: pull failed for $rel" -ForegroundColor Red
+            if ($stashed) { git stash pop -q }
+            Pop-Location
+            continue
+        }
         $msg = git log -1 --format="%s" 2>$null
         if ($msg -match "^wip:") { git reset HEAD~1 }
+        if ($stashed) {
+            git stash pop
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "  CONFLICT in $rel — resolve manually then 'git stash drop'" -ForegroundColor Yellow
+            }
+        }
         Pop-Location
     }
 }
