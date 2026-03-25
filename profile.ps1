@@ -64,10 +64,11 @@ function wip-all {
         $unpushed = git log "@{u}..HEAD" --oneline 2>$null
         if ($dirty) {
             # Skip if working tree matches remote — prevents bounce-back after unwip with no new work.
-            $diffFromRemote  = git diff "@{u}" 2>$null
-            $newUntracked    = git ls-files --others --exclude-standard 2>$null |
-                               Where-Object { -not (git ls-tree "@{u}" -- $_ 2>$null) }
-            if (-not $diffFromRemote -and -not $newUntracked) {
+            # Stage everything temporarily so untracked files are included in the diff.
+            git add -A 2>$null
+            $diffFromRemote = git diff --cached "@{u}" 2>$null
+            git reset HEAD 2>&1 | Out-Null
+            if (-not $diffFromRemote) {
                 Write-Host "  skip $rel (up to date)" -ForegroundColor DarkGray
                 Pop-Location
                 continue
