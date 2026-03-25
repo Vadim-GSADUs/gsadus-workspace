@@ -80,6 +80,14 @@ function unwip-all {
             Pop-Location
             continue
         }
+        # Remove untracked files that would be overwritten by the incoming merge.
+        # Safe because git reset HEAD~1 restores them to the working tree afterwards.
+        $incoming = git diff --name-only HEAD "@{u}" 2>$null
+        foreach ($f in $incoming) {
+            if (git ls-files --others --exclude-standard $f 2>$null) {
+                Remove-Item (Join-Path $repo $f) -Force -ErrorAction SilentlyContinue
+            }
+        }
         Write-Host "  unwip $rel" -ForegroundColor Cyan
         git pull -q
         $msg = git log -1 --format="%s" 2>$null
