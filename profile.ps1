@@ -63,6 +63,15 @@ function wip-all {
         $dirty    = git status --porcelain 2>$null
         $unpushed = git log "@{u}..HEAD" --oneline 2>$null
         if ($dirty) {
+            # Skip if working tree matches remote — prevents bounce-back after unwip with no new work.
+            $diffFromRemote  = git diff "@{u}" 2>$null
+            $newUntracked    = git ls-files --others --exclude-standard 2>$null |
+                               Where-Object { -not (git ls-tree "@{u}" -- $_ 2>$null) }
+            if (-not $diffFromRemote -and -not $newUntracked) {
+                Write-Host "  skip $rel (up to date)" -ForegroundColor DarkGray
+                Pop-Location
+                continue
+            }
             Write-Host "  wip  $rel" -ForegroundColor Cyan
             git add -A
             git commit --no-verify --no-gpg-sign -m "wip: $(Get-Date -Format 'yyyyMMdd-HHmm') [skip ci]" -q
