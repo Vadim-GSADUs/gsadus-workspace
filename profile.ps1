@@ -99,22 +99,21 @@ function unwip-all {
             $stashed = $true
         }
         Write-Host "  unwip $rel" -ForegroundColor Cyan
-        git pull -q
+        git pull -q 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             Write-Host "  ERROR: pull failed for $rel" -ForegroundColor Red
-            if ($stashed) { git stash pop -q }
+            if ($stashed) { git stash pop -q 2>&1 | Out-Null }
             Pop-Location
             continue
         }
         $msg = git log -1 --format="%s" 2>$null
-        if ($msg -match "^wip:") { git reset HEAD~1 }
+        if ($msg -match "^wip:") { git reset HEAD~1 2>&1 | Out-Null }
         if ($stashed) {
-            git stash pop 2>$null
+            git stash pop 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 # Untracked files from the stash already exist in working tree (restored by wip reset).
                 # The working tree already has the correct state — drop the stale stash.
                 git stash drop -q 2>$null
-                Write-Host "  note: local stash had files already restored from wip — stash dropped" -ForegroundColor DarkGray
             }
         }
         Pop-Location
