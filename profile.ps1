@@ -141,14 +141,32 @@ function end-day {
 
 # -- startup task helpers -----------------------------------------------------
 function Register-StartupUnwip {
-    $profilePath = $PROFILE
-    $cmd = ". '$profilePath'; unwip-all"
-    $action   = New-ScheduledTaskAction -Execute "pwsh" -Argument "-NoExit -Command $cmd"
+    $scriptPath = "$GSADUsRoot\profile.ps1"
+    # 60s delay lets network, SSH agent, and OneDrive settle after logon.
+    # Window stays open on failure so the user sees something went wrong.
+    $cmd = @"
+Start-Sleep -Seconds 60; `
+. '$scriptPath'; `
+unwip-all *>&1 | Tee-Object -Variable _out; `
+if (`$_out -match 'ERROR|WARN') { `
+  Write-Host ''; `
+  Write-Host '  unwip-all finished with errors — review above and press Enter to close.' -ForegroundColor Red; `
+  Read-Host `
+} else { `
+  Write-Host ''; `
+  Write-Host '  All repos synced.' -ForegroundColor Green; `
+  Start-Sleep -Seconds 3 `
+}
+"@
+    $action   = New-ScheduledTaskAction -Execute "pwsh" `
+        -Argument "-NoProfile -Command $cmd" `
+        -WorkingDirectory $GSADUsRoot
     $trigger  = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
-    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
+    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 10) `
+        -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
     Register-ScheduledTask -TaskName "GSADUs-unwip-all" -Action $action `
         -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null
-    Write-Host "Startup unwip registered. Opens a terminal on next login." -ForegroundColor Green
+    Write-Host "Startup unwip registered (60s delay, window stays open on failure)." -ForegroundColor Green
 }
 
 function Unregister-StartupUnwip {
