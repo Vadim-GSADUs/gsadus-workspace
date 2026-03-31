@@ -11,5 +11,8 @@ revit-mcp/
 *.addin
 *.tmp
 
+# Profile lives in $PROFILE on each machine, not in the repo
+profile.ps1
+
 # Claude Code session files
 .claude/

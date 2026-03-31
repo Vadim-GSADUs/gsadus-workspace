@@ -28,21 +28,25 @@ pwsh -File setup.ps1
 
 This clones every sub-repo into its correct folder. Safe to re-run anytime.
 
-## Step 3 — Wire up the PowerShell profile (one time only)
+## Step 3 — Copy the PowerShell profile from an existing machine (one time only)
 
-Add a single line to your `$PROFILE` that dot-sources `profile.ps1`:
+The wip/unwip functions live directly in `$PROFILE` on each machine — **not** in the repo.
+Copy from whichever machine already has them:
 
 ```powershell
-# Run this in PowerShell to append the line:
-Add-Content $PROFILE ". C:\GSADUs\profile.ps1"
+# On gsadus-vadim, pull from vg-home:
+scp "User@vg-home:C:/Users/User/OneDrive/Documents/PowerShell/Microsoft.PowerShell_profile.ps1" $PROFILE
+
+# On vg-home, pull from gsadus-vadim:
+scp "Vadim@gsadus-vadim:C:/Users/Vadim/OneDrive/Documents/PowerShell/Microsoft.PowerShell_profile.ps1" $PROFILE
 ```
 
 Then reload the shell (or open a new terminal). The `wip`, `unwip`, `wip-all`,
 `unwip-all`, and `end-day` functions are now available.
 
-> **Why this works:** `profile.ps1` lives in this repo. Every `unwip` pulls the
-> latest version. The next shell start dot-sources it automatically — no
-> re-running `setup.ps1`, no version checks, no manual steps.
+> **To sync profile changes between machines** — edit `$PROFILE` on one machine,
+> then push it to the other using the SCP commands above (reversed direction).
+> The profile is NOT tracked in git, so changes never conflict with repo work.
 
 ## Step 4 — Verify
 
@@ -50,8 +54,7 @@ Then reload the shell (or open a new terminal). The `wip`, `unwip`, `wip-all`,
 Get-Command wip, unwip, wip-all, unwip-all, end-day
 ```
 
-All five should resolve. If not, check that the `Add-Content` line above
-was written to the correct profile path (`echo $PROFILE`).
+All five should resolve. If not, check the profile path: `echo $PROFILE`.
 
 ## Optional — Register startup unwip
 
