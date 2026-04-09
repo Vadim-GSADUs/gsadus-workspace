@@ -170,7 +170,7 @@ ssh Vadim@gsadus-vadim     # from home → work
 ssh User@vg-home           # from work → home (home PC username is "User")
 
 # One-liner to run wip-all remotely without opening a full session
-ssh Vadim@gsadus-vadim "pwsh -Command '. C:\GSADUs\profile.ps1; wip-all'"
+ssh Vadim@gsadus-vadim "pwsh -Command '. $PROFILE; wip-all'"
 ```
 
 ---
