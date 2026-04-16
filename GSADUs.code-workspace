@@ -1,13 +1,28 @@
 {
 	"folders": [
-		{ "path": "AppSheetCatalog" },
-		{ "path": "AppsScript" },
-		{ "path": "BatchExportV1" },
-		{ "path": "BatchExportV2" },
-		{ "path": "PostProcess/DigitalDarkroom" },
-		{ "path": "PostProcess/PNGTools" },
-		{ "path": "Tools" },
-		{ "path": "G:/Shared drives/GSADUs Projects" },
-		{ "path": "G:/Shared drives/GSDE Projects" }
+		{
+			"path": "AppSheetCatalog"
+		},
+		{
+			"path": "AppsScript"
+		},
+		{
+			"path": "PostProcess/DigitalDarkroom"
+		},
+		{
+			"path": "PostProcess/PNGTools"
+		},
+		{
+			"path": "Tools"
+		},
+		{
+			"path": "G:/Shared drives/GSADUs Projects"
+		},
+		{
+			"path": "G:/Shared drives/GSDE Projects"
+		},
+		{
+			"path": "Vault"
+		}
 	]
 }
