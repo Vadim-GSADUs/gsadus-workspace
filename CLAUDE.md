@@ -14,7 +14,7 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
 │   └── PNGTools\         gsadus-png-tools              Batch PNG crop, rename, and audit tool
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
-├── Vault\                gsadus-vault                  Obsidian knowledge vault (wiki + context)
+├── Vault\                gsadus-vault                  Obsidian knowledge vault
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
@@ -27,13 +27,14 @@ C:\GSADUs\
 4. **`AppsScript\` is a clasp-managed archive.** Google's environment is the source of truth. Run `clasp pull` inside a subfolder to get the latest before editing.
 5. **Do not commit `*.addin` files to this workspace repo.** They belong in the `deploy\` folder of each Revit addin repo.
 
-## Starting Fresh on a New PC
+## Project Context — The Vault
 
-```powershell
-# 1. Clone this workspace repo
-git clone https://github.com/Vadim-GSADUs/gsadus-workspace.git C:\GSADUs
+All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\CLAUDE.md` for the vault schema and frontmatter conventions.
 
-# 2. Clone all sub-repos
-cd C:\GSADUs
-pwsh -File setup.ps1
-```
+Key vault pages:
+- `Vault\wiki\curated\key-locations.md` — all file paths and machine hostnames
+- `Vault\wiki\curated\planning.md` — gaps, roadmap, automation candidates
+- `Vault\wiki\auto\pipeline-image-export.md` — end-to-end image pipeline
+- `Vault\wiki\curated\wip-sync.md` — cross-PC sync workflow
+
+When starting a new session, read the relevant vault pages for context rather than expecting standalone docs at this root level.
