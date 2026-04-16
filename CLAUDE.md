@@ -14,6 +14,7 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
 │   └── PNGTools\         gsadus-png-tools              Batch PNG crop, rename, and audit tool
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
+├── Vault\                gsadus-vault                  Obsidian knowledge vault (wiki + context)
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
