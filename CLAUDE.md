@@ -20,6 +20,17 @@ C:\GSADUs\
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
 
+## Workspace Sync Protocol (wip / unwip)
+
+`unwip-all` is self-healing: it syncs the workspace root first (so `setup.ps1` is current), then calls `setup.ps1 -CloneOnly` to clone any missing repos before unwipping the rest.
+
+**When adding or removing a repo:**
+1. Update `setup.ps1` on the source machine and commit it (via `wip-all` or a real commit).
+2. On the receiving machine, `unwip-all` detects and clones the missing repo automatically — no manual steps needed.
+3. If `unwip-all` still misses a repo (e.g. fresh machine with no profile yet), run `setup.ps1` manually.
+
+**Agent rule:** When asked to sync a receiving machine, always run `unwip-all` — do not assume the repo list is already complete. If `unwip-all` reports a repo as missing after running, run `setup.ps1` on that machine.
+
 ## Rules for AI Agents
 
 1. **One repo = one direct subfolder of `C:\GSADUs\`.** Never create project files inside an existing repo folder unless you are actively working on that repo.
