@@ -18,6 +18,7 @@ $repos = @(
     @{ Url = "https://github.com/Vadim-GSADUs/GSADUs.Revit.BatchExport.git";  Path = "BatchExportV2" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-digital-darkroom.git";   Path = "PostProcess\DigitalDarkroom" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
+    @{ Url = "https://github.com/Vadim-GSADUs/gsadus-pyrevit.git";            Path = "pyRevit" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
     @{ Url = "https://github.com/Vadim-GSADUs/gsadus-vault.git";             Path = "Vault" }
 )
