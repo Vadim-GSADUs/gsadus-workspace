@@ -26,7 +26,8 @@ $repos = @(
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-pyrevit.git";            Path = "pyRevit" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault.git";              Path = "Vault" }
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault.git";              Path = "Vault" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-catalog.git";        Path = "WebCatalog" }
 )
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }

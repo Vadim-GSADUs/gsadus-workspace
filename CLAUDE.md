@@ -16,6 +16,7 @@ C:\GSADUs\
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
+├── WebCatalog\           gsadus-web-catalog            Web catalog of ADU models (Next.js + Supabase + GCS)
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
