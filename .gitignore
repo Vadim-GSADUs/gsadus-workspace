@@ -13,6 +13,8 @@ revit-mcp/
 # Temp / machine-specific
 *.addin
 *.tmp
+# Revit crash-recovery dumps (journals, AddInsSettings) — never ferry
+Recovery/
 
 # Profile lives in $PROFILE on each machine, not in the repo
 profile.ps1
