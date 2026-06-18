@@ -8,8 +8,7 @@ Each folder is an independent GitHub repo. Never nest projects inside one anothe
 C:\GSADUs\
 ├── AppSheetCatalog\      gsadus-appsheet-catalog       Google AppSheet catalog scripts
 ├── AppsScript\           gsadus-appsscript             Google Apps Script archive (clasp-managed)
-├── BatchExportV1\        GSADUs.Revit.Addin            Revit addin — legacy batch export (V1)
-├── BatchExportV2\        GSADUs.Revit.BatchExport      Revit addin — current batch export (V2)
+├── Dashboard\            gsadus-dashboard              Pipeline operations dashboard/control plane
 ├── PostProcess\
 │   ├── DigitalDarkroom\  gsadus-digital-darkroom       AI image post-processing tool
 │   └── PNGTools\         gsadus-png-tools              Batch PNG crop, rename, and audit tool
@@ -20,6 +19,14 @@ C:\GSADUs\
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
+
+### Retired / archived repos (not cloned by `setup.ps1`)
+
+- **`GSADUs.Revit.Addin`** (was `BatchExportV1\`) — legacy Revit batch-export addin.
+- **`GSADUs.Revit.BatchExport`** (was `BatchExportV2\`) — current-gen Revit batch-export addin.
+
+Both archived (read-only) on GitHub on 2026-06-18, **replaced by the pyRevit GSADUs Tools
+extension** (`gsadus-pyrevit`, `pyRevit\`). Do not re-add to the workspace or extend them.
 
 ## Workspace Sync Protocol (wip / unwip)
 
