@@ -1,0 +1,34 @@
+# ripgrep / fd search-override (NOT a git file — git ignores .ignore).
+#
+# The root .gitignore excludes every nested sub-repo so this workspace repo
+# does not try to track them. Correct for git — but ripgrep (which powers
+# Claude Code's Grep/Glob, and `rg`/`fd` on the CLI) honors .gitignore, so a
+# search from C:\GSADUs root would silently skip ALL repo content, including
+# the Vault knowledge base.
+#
+# .ignore has HIGHER precedence than .gitignore in ripgrep, so these negations
+# re-include the sub-repos for SEARCH only. Each sub-repo's own .gitignore still
+# applies once ripgrep descends (node_modules, .next, .env, etc. stay excluded).
+# This file affects search tools only — it does not change what git tracks.
+
+!AppSheetCatalog/
+!AppsScript/
+!BatchExportV1/
+!BatchExportV2/
+!Dashboard/
+!PostProcess/
+!pyRevit/
+!Tools/
+!Vault/
+!WebCatalog/
+!revit-mcp/
+
+# Keep noise out of cross-repo search even after re-including the repos above.
+# (Belt-and-suspenders; nested .gitignores already cover most of these.)
+node_modules/
+.next/
+dist/
+build/
+.venv/
+__pycache__/
+.claude/

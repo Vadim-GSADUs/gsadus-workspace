@@ -59,3 +59,10 @@ Key vault pages:
 - `Vault\wiki\curated\wip-sync.md` — cross-PC sync workflow
 
 When starting a new session, read the relevant vault pages for context rather than expecting standalone docs at this root level.
+
+### Searching across repos (Vault included)
+
+The root `.gitignore` excludes every sub-repo (so this workspace repo doesn't track them). Ripgrep — which powers Claude Code's Grep/Glob and `rg`/`fd` — honors `.gitignore`, so a search from `C:\GSADUs\` root would otherwise **silently skip all repo content, including the Vault**. A root **`.ignore`** file re-includes the sub-repos for search only; it does not affect git, and each sub-repo's own `.gitignore` still applies once ripgrep descends (node_modules, `.env`, etc. stay excluded). With it in place, Grep/Glob from the root reach the Vault and every repo.
+
+- `.ignore` is committed to the workspace repo — keep it committed so every machine inherits this behavior (it must stay in sync like `setup.ps1`).
+- If it's ever missing (fresh clone before first sync), search the target repo directly (`path: C:\GSADUs\Vault`) or pass `rg --no-ignore-vcs`. Do **not** "fix" this by editing `.gitignore` — that would make git try to track the nested repos.
