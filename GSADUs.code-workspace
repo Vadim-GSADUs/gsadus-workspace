@@ -20,6 +20,15 @@
 		},
 		{
 			"path": "Vault"
+		},
+		{
+			"path": "WebCatalog"
+		},
+		{
+			"path": "Dashboard"
+		},
+		{
+			"path": "DesignBundles"
 		}
 	]
 }
