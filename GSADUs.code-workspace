@@ -20,6 +20,12 @@
 		},
 		{
 			"path": "Vault"
+		},
+		{
+			"path": "WebCatalog"
+		},
+		{
+			"path": "Dashboard"
 		}
 	]
 }
