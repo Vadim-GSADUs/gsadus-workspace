@@ -15,6 +15,7 @@ revit-mcp/
 # Temp / machine-specific
 *.addin
 *.tmp
+.wip-conflict.md
 # Revit crash-recovery dumps (journals, AddInsSettings) — never ferry
 Recovery/
 
