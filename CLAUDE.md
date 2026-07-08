@@ -11,7 +11,7 @@ C:\GSADUs\
 ├── Dashboard\            gsadus-dashboard              Pipeline operations dashboard/control plane
 ├── DesignBundles\        gsadus-design-bundles         Interior design bundles + cost estimator
 ├── PostProcess\
-│   ├── Darkroom\         gsadus-darkroom-web           Web render console (Next.js) — stalled/archive
+│   ├── Darkroom\         (retired — see below)          Kept on disk as read-only reference
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
 │   └── PNGTools\         gsadus-png-tools              Desktop image tool: batch PNG prep + Darkroom AI render
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
@@ -28,10 +28,14 @@ C:\GSADUs\
 - **`GSADUs.Revit.BatchExport`** (was `BatchExportV2\`) — current-gen Revit batch-export addin.
 - **`gsadus-digital-darkroom`** (`PostProcess\DigitalDarkroom\`) — legacy Streamlit render app;
   a failed attempt at a browser-based PNGTools. Archived (read-only) on GitHub on 2026-07-07,
-  **replaced by the PNGTools Darkroom workflow** (`gsadus-png-tools`). The local folder stays on
-  disk as read-only reference (the Darkroom web repo's workspace links to it) but is excluded
-  from `setup.ps1`, `wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`),
-  and `.env` sync. Do not extend it or treat its behavior as a pipeline contract.
+  **replaced by the PNGTools Darkroom workflow** (`gsadus-png-tools`).
+- **`gsadus-darkroom-web`** (`PostProcess\Darkroom\`) — stalled Next.js web render console;
+  intended as a web-native successor to DigitalDarkroom + PNGTools but never adopted — PNGTools
+  outgrew it. Archived (read-only) on GitHub on 2026-07-07.
+
+Both PostProcess folders stay on disk as read-only reference but are excluded from `setup.ps1`,
+`wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`), and `.env` sync.
+Do not extend them or treat their behavior/schemas as pipeline contracts.
 
 The Revit addins were archived on 2026-06-18, replaced by the pyRevit GSADUs Tools
 extension (`gsadus-pyrevit`, `pyRevit\`). Do not re-add retired repos to the workspace.
