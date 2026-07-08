@@ -20,11 +20,11 @@ $repos = @(
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-dashboard.git";          Path = "Dashboard" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-design-bundles.git";     Path = "DesignBundles" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-pyrevit.git";            Path = "pyRevit" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault.git";              Path = "Vault" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-app.git";            Path = "WebApp" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-catalog.git";        Path = "WebCatalog" }
 )
 

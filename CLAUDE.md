@@ -9,7 +9,6 @@ C:\GSADUs\
 ├── AppSheetCatalog\      gsadus-appsheet-catalog       Google AppSheet catalog scripts
 ├── AppsScript\           gsadus-appsscript             Google Apps Script archive (clasp-managed)
 ├── Dashboard\            gsadus-dashboard              Pipeline operations dashboard/control plane
-├── DesignBundles\        gsadus-design-bundles         Interior design bundles + cost estimator
 ├── PostProcess\
 │   ├── Darkroom\         (retired — see below)          Kept on disk as read-only reference
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
@@ -17,6 +16,7 @@ C:\GSADUs\
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
+├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
 ├── WebCatalog\           gsadus-web-catalog            Web catalog of ADU models (Next.js + Supabase + GCS)
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace

@@ -16,11 +16,11 @@
 !BatchExportV1/
 !BatchExportV2/
 !Dashboard/
-!DesignBundles/
 !PostProcess/
 !pyRevit/
 !Tools/
 !Vault/
+!WebApp/
 !WebCatalog/
 !revit-mcp/
 
