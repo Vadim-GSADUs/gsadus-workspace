@@ -24,21 +24,16 @@ C:\GSADUs\
 
 ### Retired / archived repos (not cloned by `setup.ps1`)
 
-- **`GSADUs.Revit.Addin`** (was `BatchExportV1\`) — legacy Revit batch-export addin.
-- **`GSADUs.Revit.BatchExport`** (was `BatchExportV2\`) — current-gen Revit batch-export addin.
-- **`gsadus-digital-darkroom`** (`PostProcess\DigitalDarkroom\`) — legacy Streamlit render app;
-  a failed attempt at a browser-based PNGTools. Archived (read-only) on GitHub on 2026-07-07,
-  **replaced by the PNGTools Darkroom workflow** (`gsadus-png-tools`).
-- **`gsadus-darkroom-web`** (`PostProcess\Darkroom\`) — stalled Next.js web render console;
-  intended as a web-native successor to DigitalDarkroom + PNGTools but never adopted — PNGTools
-  outgrew it. Archived (read-only) on GitHub on 2026-07-07.
+| GitHub repo | Was | Archived | Superseded by |
+|---|---|---|---|
+| `GSADUs.Revit.Addin`, `GSADUs.Revit.BatchExport` | `BatchExportV1\`, `BatchExportV2\` (gone from disk) | 2026-06-18 | pyRevit GSADUs Tools extension (`gsadus-pyrevit`) |
+| `gsadus-digital-darkroom` | `PostProcess\DigitalDarkroom\` | 2026-07-07 | PNGTools Darkroom workflow (`gsadus-png-tools`) |
+| `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | PNGTools outgrew it |
 
 Both PostProcess folders stay on disk as read-only reference but are excluded from `setup.ps1`,
 `wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`), and `.env` sync.
 Do not extend them or treat their behavior/schemas as pipeline contracts.
-
-The Revit addins were archived on 2026-06-18, replaced by the pyRevit GSADUs Tools
-extension (`gsadus-pyrevit`, `pyRevit\`). Do not re-add retired repos to the workspace.
+Do not re-add retired repos to the workspace.
 
 ## Workspace Sync Protocol (wip / unwip)
 
@@ -61,6 +56,12 @@ extension (`gsadus-pyrevit`, `pyRevit\`). Do not re-add retired repos to the wor
 6. **Fix the root cause; never fall back to a legacy path or leave stale code behind.** When patching or fixing, address the actual error at its source. Do **not** reach for a superseded/legacy method as a quick workaround, and do **not** leave the old or duplicate code path behind "just in case" — remove or migrate superseded code as part of the same change. Stacked fallbacks and orphaned code snowball, get silently ignored, and make every later edit harder to reason about. A genuine fallback must be a deliberate, documented design decision (and the superseded path retired on a stated timeline), never a reflex. This applies to every repo in this workspace.
 7. **Plans expire — deprecate aged plans instead of reviving them.** If a planning doc (a `planning.md`, `.planning/` artifact, roadmap, or spec) has sat untouched and unimplemented for **3–4 months**, mark it deprecated rather than executing or patching it — by then the projects have almost always evolved past what the plan describes. Recreate a fresh plan from current codebase context instead of trying to rehabilitate an aged one (decision 2026-07-10). This applies to every repo in this workspace and to the Vault's planning pages.
 
+## Workspace Skills
+
+Repo add/rename/retire/archive: follow `C:\GSADUs\.claude\skills\repo-lifecycle\SKILL.md` and
+finish with its `scripts\check-repo-registry.ps1` green. Workspace skills auto-load only in
+sessions started at `C:\GSADUs` — from a sub-repo session, read that SKILL.md directly.
+
 ## Project Context — The Vault
 
 All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\CLAUDE.md` for the vault schema and frontmatter conventions.
@@ -75,7 +76,9 @@ When starting a new session, read the relevant vault pages for context rather th
 
 ### Searching across repos (Vault included)
 
-The root `.gitignore` excludes every sub-repo (so this workspace repo doesn't track them). Ripgrep — which powers Claude Code's Grep/Glob and `rg`/`fd` — honors `.gitignore`, so a search from `C:\GSADUs\` root would otherwise **silently skip all repo content, including the Vault**. A root **`.ignore`** file re-includes the sub-repos for search only; it does not affect git, and each sub-repo's own `.gitignore` still applies once ripgrep descends (node_modules, `.env`, etc. stay excluded). With it in place, Grep/Glob from the root reach the Vault and every repo.
-
-- `.ignore` is committed to the workspace repo — keep it committed so every machine inherits this behavior (it must stay in sync like `setup.ps1`).
-- If it's ever missing (fresh clone before first sync), search the target repo directly (`path: C:\GSADUs\Vault`) or pass `rg --no-ignore-vcs`. Do **not** "fix" this by editing `.gitignore` — that would make git try to track the nested repos.
+Ripgrep (Claude Code's Grep/Glob, `rg`/`fd`) honors the root `.gitignore`, which excludes every
+sub-repo — so root searches would silently skip all repo content, including the Vault. The
+committed root **`.ignore`** re-includes the sub-repos for search only (git is unaffected; each
+sub-repo's own `.gitignore` still applies once ripgrep descends). If `.ignore` is ever missing
+(fresh clone before first sync), search the target repo directly (`path: C:\GSADUs\Vault`) or pass
+`rg --no-ignore-vcs`. Do **not** "fix" this by editing `.gitignore` — that would make git try to track the nested repos.
