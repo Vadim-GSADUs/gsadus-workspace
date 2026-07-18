@@ -12,7 +12,7 @@ param(
 #   pwsh -File setup.ps1
 #   Right-click -> "Run with PowerShell"
 #
-# After cloning, see SETUP.md for one-time profile configuration.
+# After cloning, see BOOTSTRAP.md for one-time profile configuration.
 
 $Root = "C:\GSADUs"
 
@@ -90,7 +90,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host " Repos cloned to $Root" -ForegroundColor Green
 Write-Host ""
 if (-not $CloneOnly) {
-    Write-Host " Next: follow SETUP.md for one-time profile configuration."
+    Write-Host " Next: follow BOOTSTRAP.md for one-time profile configuration."
 }
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 Write-Host ""

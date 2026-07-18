@@ -1,8 +1,6 @@
 # Sub-repos — each managed independently
 AppSheetCatalog/
 AppsScript/
-BatchExportV1/
-BatchExportV2/
 Dashboard/
 PostProcess/
 pyRevit/
@@ -10,7 +8,6 @@ Tools/
 Vault/
 WebApp/
 WebCatalog/
-revit-mcp/
 
 # Temp / machine-specific
 *.addin
@@ -22,5 +19,6 @@ Recovery/
 # Profile lives in $PROFILE on each machine, not in the repo
 profile.ps1
 
-# Claude Code session files
-.claude/
+# Workspace .claude/ IS tracked (hooks, skills, settings.json sync via git);
+# only the machine-local allowlist stays per-machine
+.claude/settings.local.json

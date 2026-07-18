@@ -13,8 +13,6 @@
 
 !AppSheetCatalog/
 !AppsScript/
-!BatchExportV1/
-!BatchExportV2/
 !Dashboard/
 !PostProcess/
 !pyRevit/
@@ -22,7 +20,6 @@
 !Vault/
 !WebApp/
 !WebCatalog/
-!revit-mcp/
 
 # Keep noise out of cross-repo search even after re-including the repos above.
 # (Belt-and-suspenders; nested .gitignores already cover most of these.)
@@ -32,4 +29,4 @@ dist/
 build/
 .venv/
 __pycache__/
-.claude/
+.claude/settings.local.json

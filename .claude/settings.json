@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git check-ignore *)",
+      "Bash(git grep *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "ConvertTo-Json @{hookSpecificOutput=@{hookEventName='SessionStart';additionalContext=('Current date and time: ' + (Get-Date -Format 'dddd, MMMM d, yyyy HH:mm') + '. Use this exact date when constructing web searches or reasoning about current tools, versions, or events.')}}",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "if (Test-Path 'C:\\GSADUs\\.wip-conflict.md') { ConvertTo-Json @{hookSpecificOutput=@{hookEventName='SessionStart';additionalContext=('UNRESOLVED WIP SYNC CONFLICT: C:\\GSADUs\\.wip-conflict.md exists - the last unwip/unwip-all run hit conflicts that need an agent to reconcile. Read that file and follow its Agent resolution checklist before other work in the affected repos.')}} }",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
