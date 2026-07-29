@@ -14,6 +14,7 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
 │   └── PNGTools\         gsadus-png-tools              Desktop image tool: batch PNG prep + Darkroom AI render
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
+├── SiteCheck\            gsadus-site-check             Public "Will it fit?" 3D site-check web app
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
 ├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
