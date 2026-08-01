@@ -83,3 +83,24 @@ committed root **`.ignore`** re-includes the sub-repos for search only (git is u
 sub-repo's own `.gitignore` still applies once ripgrep descends). If `.ignore` is ever missing
 (fresh clone before first sync), search the target repo directly (`path: C:\GSADUs\Vault`) or pass
 `rg --no-ignore-vcs`. Do **not** "fix" this by editing `.gitignore` — that would make git try to track the nested repos.
+
+**A root search spans every repo — attribute each hit before reporting it.** Because `.ignore`
+re-includes all sub-repos, results from `C:\GSADUs` mix repos in one flat list, and a file found
+there does **not** belong to the repo you are auditing. Three hazards, each with a real miss
+(2026-08-01 Tools audit, whose findings were three-for-five wrong):
+
+- **Cross-repo attribution.** A scratch-file sweep returned `Tools\ElementFilter\_t.py` and
+  `AppsScript\GSADUs Product List\debug_url.py` adjacent; the audit reported the AppsScript file as
+  living in Tools and asked for its deletion. Always re-anchor a finding by searching the target
+  repo directly before acting on it.
+- **`.ignore` hides `dist/`, `build/`, `node_modules/`, `.venv/`.** Those live in the noise block at
+  the bottom of `.ignore`, so root searches return **zero** hits inside them. The audit inferred a
+  non-existent `Tools/dist/` (the real ones are three per-tool `dist/` folders) and generalized
+  staleness to all three when one was byte-identical to its source. Never characterize build output
+  from a root search — `cd` into the repo, or pass `--no-ignore`.
+- **Agent worktrees are searchable.** `<repo>\.claude\worktrees\<name>\` copies show up in root
+  results and may be stale branch content. Prefer the real checkout unless you mean the worktree.
+
+Timestamps are not evidence of staleness either: two READMEs flagged "5 months stale" by mtime
+described current behavior accurately. Verify content, not dates. More generally, treat any audit's
+findings as **claims to re-verify at the file**, not as a work order — including this file's.
