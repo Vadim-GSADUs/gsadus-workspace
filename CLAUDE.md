@@ -14,7 +14,7 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
 │   └── PNGTools\         gsadus-png-tools              Desktop image tool: batch PNG prep + Darkroom AI render
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
-├── SiteCheck\            gsadus-site-check             Public "Will it fit?" 3D site-check web app
+├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
 ├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
@@ -30,8 +30,9 @@ C:\GSADUs\
 | `GSADUs.Revit.Addin`, `GSADUs.Revit.BatchExport` | `BatchExportV1\`, `BatchExportV2\` (gone from disk) | 2026-06-18 | pyRevit GSADUs Tools extension (`gsadus-pyrevit`) |
 | `gsadus-digital-darkroom` | `PostProcess\DigitalDarkroom\` | 2026-07-07 | PNGTools Darkroom workflow (`gsadus-png-tools`) |
 | `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | PNGTools outgrew it |
+| `gsadus-site-check` | `SiteCheck\` | 2026-08-06 | The Site Check module ships from `gsadus-web-app`; its live contract is `WebApp\docs\site-check\SPEC.md` |
 
-Both PostProcess folders stay on disk as read-only reference but are excluded from `setup.ps1`,
+The retired folders stay on disk as read-only reference but are excluded from `setup.ps1`,
 `wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`), and `.env` sync.
 Do not extend them or treat their behavior/schemas as pipeline contracts.
 Do not re-add retired repos to the workspace.
