@@ -4,6 +4,7 @@
 - [Git for Windows](https://git-scm.com/download/win)
 - [PowerShell 7+](https://github.com/PowerShell/PowerShell/releases) (`pwsh`)
 - [GitHub CLI](https://cli.github.com/) → run `gh auth login`
+- [Node.js 20+ LTS](https://nodejs.org/) — required by the npm-global CLIs (`vercel`, `gws`, `clasp`)
 
 ## Setup
 
