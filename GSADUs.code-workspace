@@ -28,6 +28,9 @@
 			"path": "Dashboard"
 		},
 		{
+			"path": "PM"
+		},
+		{
 			"path": "WebApp"
 		}
 	]

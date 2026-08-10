@@ -9,6 +9,7 @@ C:\GSADUs\
 ├── AppSheetCatalog\      gsadus-appsheet-catalog       Google AppSheet catalog scripts
 ├── AppsScript\           gsadus-appsscript             Google Apps Script archive (clasp-managed)
 ├── Dashboard\            gsadus-dashboard              Pipeline operations dashboard/control plane
+├── PM\                   gsadus-pm                     Internal PM/scheduling webapp (BuilderTrend replacement)
 ├── PostProcess\
 │   ├── Darkroom\         (retired — see below)          Kept on disk as read-only reference
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
