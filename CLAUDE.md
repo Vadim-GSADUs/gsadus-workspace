@@ -50,13 +50,18 @@ Each webapp project owns a port lane so simultaneous dev servers never conflict.
 redirect allowlists (each project's own Supabase) and the Maps browser key (WebApp only)
 are configured per lane — a server outside its lane breaks sign-in and/or Maps.
 
+**Port 3000 is VACATED by all web projects (2026-08-11):** it belongs to the Revit
+ecosystem (Revit 2026's sign-on helper reserves it via http.sys while open; a pyRevit
+MCP/CLI environment may claim it). No web app binds 3000, ever.
+
 | Repo | Primary | Agent/second server | e2e | Notes |
 |---|---|---|---|---|
-| `WebApp` | 3000 | 3009 | 3111 | Maps key + `gsadus-web-catalog` OAuth allow all three + both ts.net hosts. Build-block hook guards 3000–3010. Revit reserves 3000 while open. |
-| `PM` | 3200 | 3209 | 3211 | `gsadus-pm` Supabase OAuth allowlist covers all three. Never run PM inside 3000–3010 — it trips WebApp's build-block hook and squats WebApp's OAuth+Maps origins. |
+| `WebApp` | 3009 | 3010 (non-signed-in only) | 3111 | `npm run dev` pins 3009. Maps key + `gsadus-web-catalog` OAuth allow 3009/3111 + both ts.net hosts; 3010 is NOT in either (Codex/agent work that needs no Maps/OAuth). Build-block hook guards 3000–3010. |
+| `PM` | 3200 | 3209 | 3211 | `gsadus-pm` Supabase OAuth allowlist covers all three (Site URL: localhost:3200 until Vercel-hosted). Never run PM inside 3000–3010 — it trips WebApp's build-block hook. |
 
-Agent rule: start dev servers only on your repo's lane (`npm run dev -- --port <port>`);
-primary is the owner's, agents default to the second-server port.
+Agent rule: start dev servers only on your repo's lane; primary is the owner's. Agents
+default to the second-server port; WebApp agents needing signed-in/Maps testing while the
+owner holds 3009 use 3111 (also fully allowlisted).
 
 ## Workspace Sync Protocol (wip / unwip)
 
