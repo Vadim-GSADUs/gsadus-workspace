@@ -26,12 +26,18 @@ C:\GSADUs\
 
 ### Retired / archived repos (not cloned by `setup.ps1`)
 
-| GitHub repo | Was | Archived | Superseded by |
-|---|---|---|---|
-| `GSADUs.Revit.Addin`, `GSADUs.Revit.BatchExport` | `BatchExportV1\`, `BatchExportV2\` (gone from disk) | 2026-06-18 | pyRevit GSADUs Tools extension (`gsadus-pyrevit`) |
-| `gsadus-digital-darkroom` | `PostProcess\DigitalDarkroom\` | 2026-07-07 | PNGTools Darkroom workflow (`gsadus-png-tools`) |
-| `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | PNGTools outgrew it |
-| `gsadus-site-check` | `SiteCheck\` | 2026-08-06 | The Site Check module ships from `gsadus-web-app`; its live contract is `WebApp\docs\site-check\SPEC.md` |
+| GitHub repo | Was | Retired | GitHub state | Superseded by |
+|---|---|---|---|---|
+| `GSADUs.Revit.Addin`, `GSADUs.Revit.BatchExport` | `BatchExportV1\`, `BatchExportV2\` (gone from disk) | 2026-06-18 | archived | pyRevit GSADUs Tools extension (`gsadus-pyrevit`) |
+| `gsadus-digital-darkroom` | `PostProcess\DigitalDarkroom\` | 2026-07-07 | archived | PNGTools Darkroom workflow (`gsadus-png-tools`) |
+| `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | archived | PNGTools outgrew it |
+| `gsadus-site-check` | `SiteCheck\` | 2026-08-06 | **deleted 2026-08-11** | The Site Check module ships from `gsadus-web-app`; its live contract is `WebApp\docs\site-check\SPEC.md` |
+
+**`gsadus-site-check` has no remote at all** — the owner deleted the GitHub repository on
+2026-08-11 (not archived; it is gone). `C:\GSADUs\SiteCheck` remains on disk as read-only
+reference, but its `origin` still points at the deleted URL, so any fetch/pull/push from that
+folder will fail. That is expected — do not "fix" the remote, re-create the repo, or push the
+folder anywhere.
 
 The retired folders stay on disk as read-only reference but are excluded from `setup.ps1`,
 `wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`), and `.env` sync.
