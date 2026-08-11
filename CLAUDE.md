@@ -44,6 +44,20 @@ The retired folders stay on disk as read-only reference but are excluded from `s
 Do not extend them or treat their behavior/schemas as pipeline contracts.
 Do not re-add retired repos to the workspace.
 
+## Dev Port Map (owner decision 2026-08-11)
+
+Each webapp project owns a port lane so simultaneous dev servers never conflict. OAuth
+redirect allowlists (each project's own Supabase) and the Maps browser key (WebApp only)
+are configured per lane — a server outside its lane breaks sign-in and/or Maps.
+
+| Repo | Primary | Agent/second server | e2e | Notes |
+|---|---|---|---|---|
+| `WebApp` | 3000 | 3009 | 3111 | Maps key + `gsadus-web-catalog` OAuth allow all three + both ts.net hosts. Build-block hook guards 3000–3010. Revit reserves 3000 while open. |
+| `PM` | 3200 | 3209 | 3211 | `gsadus-pm` Supabase OAuth allowlist covers all three. Never run PM inside 3000–3010 — it trips WebApp's build-block hook and squats WebApp's OAuth+Maps origins. |
+
+Agent rule: start dev servers only on your repo's lane (`npm run dev -- --port <port>`);
+primary is the owner's, agents default to the second-server port.
+
 ## Workspace Sync Protocol (wip / unwip)
 
 `unwip-all` is self-healing: it syncs the workspace root first (so `setup.ps1` is current), then calls `setup.ps1 -CloneOnly` to clone any missing repos before unwipping the rest.
