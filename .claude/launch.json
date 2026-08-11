@@ -1,0 +1,12 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "pm-dev",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "dev", "--prefix", "PM"],
+			"port": 3000,
+			"autoPort": true
+		}
+	]
+}
