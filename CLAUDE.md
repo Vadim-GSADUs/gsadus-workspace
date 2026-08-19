@@ -15,6 +15,7 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
 │   └── PNGTools\         gsadus-png-tools              Desktop image tool: batch PNG prep + Darkroom AI render
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
+├── Shared\               gsadus-shared                 Shared internal npm packages (GitHub Packages; @gsadus/pipedrive)
 ├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
