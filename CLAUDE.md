@@ -58,7 +58,7 @@ MCP/CLI environment may claim it). No web app binds 3000, ever.
 | Repo | Primary | Agent/second server | e2e | Notes |
 |---|---|---|---|---|
 | `WebApp` | 3009 | 3010 (non-signed-in only) | 3111 | `npm run dev` pins 3009. Maps key + `gsadus-web-catalog` OAuth allow 3009/3111 + both ts.net hosts; 3010 is NOT in either (Codex/agent work that needs no Maps/OAuth). Build-block hook guards 3000–3010. |
-| `PM` | 3200 | 3209 | 3211 | `gsadus-pm` Supabase OAuth allowlist covers all three (Site URL: localhost:3200 until Vercel-hosted). Never run PM inside 3000–3010 — it trips WebApp's build-block hook. |
+| `PM` | 3200 | 3209 | 3211 | PM authenticates via the `gsadus-web-catalog` Supabase project (2026-08-24 merge); its allowlist covers all three PM ports (catalog Site URL unchanged). Never run PM inside 3000–3010 — it trips WebApp's build-block hook. |
 
 Agent rule: start dev servers only on your repo's lane; primary is the owner's. Agents
 default to the second-server port; WebApp agents needing signed-in/Maps testing while the
