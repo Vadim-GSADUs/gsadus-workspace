@@ -42,7 +42,7 @@ the same change.
 - `CLAUDE.md` → tree row, plus every other old-name mention (`git grep` the workspace repo).
 - `.gitignore` / `.ignore` → rename both entries.
 - `GSADUs.code-workspace` → folder path.
-- Tools `ShellProfile\profile.ps1` → `$GSADUsEnvFiles` paths if the repo carries a synced `.env` (edit lands in the **gsadus-tools** repo).
+- Tools `ShellProfile\profile.ps1` → `$GSADUsDopplerRenders` target path if the repo has a Doppler-rendered env file (edit lands in the **gsadus-tools** repo; spec: Vault `wiki/curated/secrets-management.md`).
 - Vault → `workspaces.md` row + `workspace-<name>.md` hub (title, `sources:` frontmatter).
 - Vault decision-log → drafted row if the rename meets the majors bar.
 - Receiving machine: folder move + `git remote set-url` + **memory migration** — follow the wip-sync reference below; do not restate it here.
@@ -55,7 +55,7 @@ the same change.
 - `CLAUDE.md` → move the repo to the retired section, keeping the guard sentences (do not extend; behavior/schemas are not pipeline contracts).
 - `.gitignore` / `.ignore` → entries follow the folder: keep while it stays on disk, remove when it leaves.
 - `GSADUs.code-workspace` → remove the folder entry unless the read-only folder should still open in the hub.
-- Tools `ShellProfile\profile.ps1` → add to `$GSADUsRetiredRepos`; remove from `$GSADUsEnvFiles` if present (**gsadus-tools** commit).
+- Tools `ShellProfile\profile.ps1` → add to `$GSADUsRetiredRepos`; remove its `$GSADUsDopplerRenders` entry if present (**gsadus-tools** commit), and archive/delete its Doppler project per Vault `wiki/curated/secrets-management.md`.
 - Vault → `workspaces.md` row marked *(retired)*; hub page gets `status: deprecated` (**never delete Vault pages**).
 - Vault decision-log → drafted row (a retirement meets the majors-only bar).
 - Other machine: per-machine state per the wip-sync reference; the retired folder stays read-only there too.
