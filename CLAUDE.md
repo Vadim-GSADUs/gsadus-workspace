@@ -75,6 +75,17 @@ owner holds 3009 use 3111 (also fully allowlisted).
 
 **Agent rule:** When asked to sync a receiving machine, always run `unwip-all` — do not assume the repo list is already complete. If `unwip-all` reports a repo as missing after running, run `setup.ps1` on that machine.
 
+## Secrets — Doppler (adopted 2026-08-25)
+
+All application secrets live in **Doppler** (workplace on vadim@gsadus.com); the
+gitignored env files (`WebApp\.env.local`, `PM\.env.local`, `WebCatalog\pipeline\.env`,
+`PostProcess\PNGTools\.env`) are **rendered artifacts** — regenerate with `pull-env`
+(auto-chained after a clean `unwip-all`). Never hand-edit, copy between machines, or
+commit them, and never print their values into a transcript; edit in Doppler
+(dashboard or `doppler secrets set`), then `pull-env` on each machine. Vercel
+Production/Preview sync from Doppler `webapp/prd`/`stg`. Full spec, hygiene rules for
+agents, and the migration record: `Vault\wiki\curated\secrets-management.md`.
+
 ## Rules for AI Agents
 
 1. **One repo = one direct subfolder of `C:\GSADUs\`.** Never create project files inside an existing repo folder unless you are actively working on that repo.
