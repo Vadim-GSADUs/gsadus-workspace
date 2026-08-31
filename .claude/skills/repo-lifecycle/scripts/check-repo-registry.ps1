@@ -13,11 +13,24 @@ Surfaces cross-checked:
   - .ignore                     (search re-include negations: coverage + dead entries)
   - GSADUs.code-workspace       (hub folder roots vs $repos)
   - Vault\wiki\curated\workspaces.md registry <-> *.code-workspace files on disk
+  - Vault\wiki\curated\key-locations.md Local Repos table <-> setup.ps1 $repos + retired-on-disk
+  - Vault\wiki\curated\workspace-<name>.md hub pages <-> *.code-workspace files on disk
 
 Known legitimate exceptions encoded below:
   - PostProcess\ is a grouping folder, not a repo (its children are the repos)
   - pyRevit is absent from the hub .code-workspace by design
   - Recovery/ in .gitignore is preventive (Revit crash dumps), may not exist on disk
+
+Added 2026-08-31 (Pass 02) — the key-locations and hub-page checks. The registry check is
+keyed on .code-workspace FILES; key-locations.md is keyed on REPOS. Those are different
+axes and nothing spanned the second one: PM, Shared and SiteCheck were each missing from
+key-locations.md for weeks while this script reported green, because each had a workspace
+file and therefore a registry row. A passing check was masking the gap.
+Repos are derived from setup.ps1 $repos plus $GSADUsRetiredRepos still on disk — the same
+sources of truth the rest of this script already uses; nothing here redefines what a repo
+is. Path comparisons are forward-slash normalised so -Root genuinely works off a root other
+than C:\GSADUs (previously -Root was advertised but three comparisons hardcoded C:\GSADUs
+or Windows separators, so the script could not be exercised against a fixture).
 
 Exit 0 = all surfaces consistent. Exit 1 = drift (each mismatch named). Exit 2 = cannot parse inputs.
 #>
@@ -34,9 +47,11 @@ $profilePath  = Join-Path $Root 'Tools\ShellProfile\profile.ps1'
 $gitignorePath = Join-Path $Root '.gitignore'
 $searchIgnorePath = Join-Path $Root '.ignore'
 $hubWsPath    = Join-Path $Root 'GSADUs.code-workspace'
-$registryPath = Join-Path $Root 'Vault\wiki\curated\workspaces.md'
+$registryPath = Join-Path $Root 'Vault/wiki/curated/workspaces.md'
+$keyLocPath   = Join-Path $Root 'Vault/wiki/curated/key-locations.md'
+$hubDir       = Join-Path $Root 'Vault/wiki/curated'
 
-foreach ($f in @($setupPath, $profilePath, $gitignorePath, $searchIgnorePath, $hubWsPath, $registryPath)) {
+foreach ($f in @($setupPath, $profilePath, $gitignorePath, $searchIgnorePath, $hubWsPath, $registryPath, $keyLocPath)) {
     if (-not (Test-Path -LiteralPath $f)) { Write-Error "Required input missing: $f"; exit 2 }
 }
 
@@ -129,17 +144,19 @@ foreach ($h in $hubLocal) {
     if ($setupReposFwd -notcontains $h) {
         $drift.Add("GSADUs.code-workspace folder '$h' does not match any setup.ps1 repo")
     }
-    if (-not (Test-Path (Join-Path $Root ($h -replace '/', '\')))) {
+    if (-not (Test-Path (Join-Path $Root $h))) {
         $drift.Add("GSADUs.code-workspace folder '$h' does not exist on disk")
     }
 }
 
 # ── Vault workspaces.md registry vs *.code-workspace files on disk ───────────
 $registryRaw = Get-Content -LiteralPath $registryPath -Raw
-$regAbs = @([regex]::Matches($registryRaw, '(?i)C:\\GSADUs\\[^`\s|]*?\.code-workspace') | ForEach-Object { $_.Value })
+$rootPat = [regex]::Escape($Root.TrimEnd('\','/'))
+$regAbs = @([regex]::Matches($registryRaw, "(?i)$rootPat[\\/][^``\s|]*?\.code-workspace") | ForEach-Object { $_.Value })
 $regRel = @([regex]::Matches($registryRaw, '(?i)repo:\s*\.\./([^\s`]*?\.code-workspace)') |
-             ForEach-Object { Join-Path $Root ($_.Groups[1].Value -replace '/', '\') })
-$registryFiles = @($regAbs + $regRel | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object -Unique)
+             ForEach-Object { Join-Path $Root $_.Groups[1].Value })
+$registryFiles = @($regAbs + $regRel |
+    ForEach-Object { ([IO.Path]::GetFullPath($_)).Replace('\','/').ToLowerInvariant() } | Sort-Object -Unique)
 
 $wsOnDisk = [System.Collections.Generic.List[string]]::new()
 Get-ChildItem -LiteralPath $Root -Filter *.code-workspace -File | ForEach-Object { $wsOnDisk.Add($_.FullName) }
@@ -153,7 +170,8 @@ foreach ($dir in (Get-ChildItem -LiteralPath $Root -Directory)) {
         }
     }
 }
-$wsOnDiskNorm = @($wsOnDisk | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object -Unique)
+$wsOnDiskNorm = @($wsOnDisk |
+    ForEach-Object { ([IO.Path]::GetFullPath($_)).Replace('\','/').ToLowerInvariant() } | Sort-Object -Unique)
 
 foreach ($r in $registryFiles) {
     if ($wsOnDiskNorm -notcontains $r) { $drift.Add("Vault workspaces.md references missing file: $r") }
@@ -162,11 +180,55 @@ foreach ($w in $wsOnDiskNorm) {
     if ($registryFiles -notcontains $w) { $drift.Add("Workspace file on disk not in the Vault workspaces.md registry: $w") }
 }
 
+# ── Vault key-locations.md Local Repos coverage ──────────────────────────────
+# Keyed on REPOS, not on workspace files — see the header note. This is the check whose
+# absence let PM/, Shared/ and SiteCheck/ go unlisted while every other surface was green.
+$keyLocRaw = Get-Content -LiteralPath $keyLocPath -Raw
+# Scope to the '## Local Repos' section only — later tables in this page (Shared Drive,
+# CLI tooling) use the same backticked-path cell shape and are not repo rows.
+$m = [regex]::Match($keyLocRaw, '(?ms)^##\s+Local Repos\b.*?(?=^##\s|\z)')
+if (-not $m.Success) {
+    Write-Error "Could not find the '## Local Repos' section in $keyLocPath"; exit 2
+}
+$keyLocRows = @([regex]::Matches($m.Value, '(?m)^\|\s*`([^`|]+?)/`\s*\|') |
+                ForEach-Object { ($_.Groups[1].Value -replace '\\', '/').Trim() })
+if ($keyLocRows.Count -eq 0) {
+    Write-Error "Could not parse any Local Repos rows from $keyLocPath"; exit 2
+}
+$expectedRepoRows = @(@($setupRepos) +
+                      @($retiredRepos | Where-Object { Test-Path (Join-Path $Root ($_ -replace '\\', '/')) }) |
+                      ForEach-Object { $_ -replace '\\', '/' } | Sort-Object -Unique)
+foreach ($e in $expectedRepoRows) {
+    if ($keyLocRows -notcontains $e) {
+        $drift.Add("Vault key-locations.md has no Local Repos row for '$e/' (it is in setup.ps1 `$repos, or is a retired repo still on disk)")
+    }
+}
+foreach ($k in $keyLocRows) {
+    if (-not (Test-Path (Join-Path $Root $k))) {
+        $drift.Add("Vault key-locations.md Local Repos row '$k/' names a directory that is not on disk")
+    }
+}
+
+# ── Vault workspace-<name>.md hub pages vs *.code-workspace files on disk ────
+# A registry row existing is not the same as the hub page it links to existing.
+$hubSourced = [System.Collections.Generic.List[string]]::new()
+foreach ($hub in (Get-ChildItem -LiteralPath $hubDir -Filter 'workspace-*.md' -File)) {
+    $hubRaw = Get-Content -LiteralPath $hub.FullName -Raw
+    foreach ($m in [regex]::Matches($hubRaw, '(?im)^\s*-\s*repo:\s*\.\./(\S.*?\.code-workspace)\s*$')) {
+        $hubSourced.Add((([IO.Path]::GetFullPath((Join-Path $Root $m.Groups[1].Value))).Replace('\','/')).ToLowerInvariant())
+    }
+}
+foreach ($w in $wsOnDiskNorm) {
+    if ($hubSourced -notcontains $w) {
+        $drift.Add("No Vault wiki\curated\workspace-*.md hub page lists '$w' in its sources: frontmatter")
+    }
+}
+
 # ── Report ───────────────────────────────────────────────────────────────────
 if ($drift.Count -gt 0) {
     Write-Host "check-repo-registry: DRIFT — $($drift.Count) mismatch(es):" -ForegroundColor Red
     foreach ($m in $drift) { Write-Host "  - $m" -ForegroundColor Red }
     exit 1
 }
-Write-Host ("check-repo-registry: OK — {0} active repos, {1} retired; setup.ps1, disk, .gitignore, .ignore, hub workspace and Vault registry all consistent." -f $setupRepos.Count, $retiredRepos.Count) -ForegroundColor Green
+Write-Host ("check-repo-registry: OK — {0} active repos, {1} retired; setup.ps1, disk, .gitignore, .ignore, hub workspace, Vault registry, {2} key-locations rows and {3} hub sources all consistent." -f $setupRepos.Count, $retiredRepos.Count, $keyLocRows.Count, $hubSourced.Count) -ForegroundColor Green
 exit 0

@@ -30,6 +30,7 @@ the same change.
 - `.ignore` → matching `!<Folder>/` negation so root search reaches the new repo.
 - `GSADUs.code-workspace` → folder entry (skip only with a documented reason — pyRevit is the precedent).
 - Vault `wiki/curated/workspaces.md` → registry row; follow its "How to add a new workspace" for the hub page + frontmatter.
+- Vault `wiki/curated/key-locations.md` → Local Repos row (directory, GitHub name, one-line purpose, hub wikilink). Keyed on the **repo**, not the workspace file — a repo with no `.code-workspace` still needs this row.
 - Vault decision-log → drafted row (a new repo meets the majors-only bar).
 - Other machine: `unwip-all` clones it via setup.ps1; per-machine state per the wip-sync reference below.
 - Run `check-repo-registry.ps1` → green.
@@ -44,6 +45,7 @@ the same change.
 - `GSADUs.code-workspace` → folder path.
 - Tools `ShellProfile\profile.ps1` → `$GSADUsDopplerRenders` target path if the repo has a Doppler-rendered env file (edit lands in the **gsadus-tools** repo; spec: Vault `wiki/curated/secrets-management.md`).
 - Vault → `workspaces.md` row + `workspace-<name>.md` hub (title, `sources:` frontmatter).
+- Vault → `key-locations.md` Local Repos row: update the directory cell (and the GitHub name if it changed).
 - Vault decision-log → drafted row if the rename meets the majors bar.
 - Receiving machine: folder move + `git remote set-url` + **memory migration** — follow the wip-sync reference below; do not restate it here.
 - Run `check-repo-registry.ps1` → green.
@@ -57,6 +59,7 @@ the same change.
 - `GSADUs.code-workspace` → remove the folder entry unless the read-only folder should still open in the hub.
 - Tools `ShellProfile\profile.ps1` → add to `$GSADUsRetiredRepos`; remove its `$GSADUsDopplerRenders` entry if present (**gsadus-tools** commit), and archive/delete its Doppler project per Vault `wiki/curated/secrets-management.md`.
 - Vault → `workspaces.md` row marked *(retired)*; hub page gets `status: deprecated` (**never delete Vault pages**).
+- Vault → `key-locations.md` Local Repos row marked retired **in place**, following the `PostProcess\Darkroom\` pattern — keep the row while the folder stays on disk; never delete it.
 - Vault decision-log → drafted row (a retirement meets the majors-only bar).
 - Other machine: per-machine state per the wip-sync reference; the retired folder stays read-only there too.
 - Run `check-repo-registry.ps1` → green.
