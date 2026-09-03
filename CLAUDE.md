@@ -86,6 +86,21 @@ commit them, and never print their values into a transcript; edit in Doppler
 Production/Preview sync from Doppler `webapp/prd`/`stg`. Full spec, hygiene rules for
 agents, and the migration record: `Vault\wiki\curated\secrets-management.md`.
 
+## Production Error Triage — Sentry (one org, every project)
+
+One Sentry org (`gsadus`) holds every app project (`webapp`, `pm`, …). Read it from ANY repo
+with the workspace probe — GET-only by construction, compact output, no MCP round-trips:
+
+```powershell
+sentry-probe issues --project pm                        # pwsh (shell-profile function)
+node C:/GSADUs/Tools/Sentry/sentry-probe.mjs issue PM-10   # Git Bash / any shell
+```
+
+Commands: `projects` · `issues` · `issue <SHORT_ID>` · `events`; `--json` for the raw payload.
+Auth is `SENTRY_AUTH_TOKEN`, read from Doppler `webapp/dev` at call time (never print it).
+Reach for the claude.ai Sentry connector only for what the probe cannot do (Seer, updates).
+Details: `Tools\Sentry\README.md`.
+
 ## Rules for AI Agents
 
 1. **One repo = one direct subfolder of `C:\GSADUs\`.** Never create project files inside an existing repo folder unless you are actively working on that repo.
