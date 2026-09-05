@@ -25,7 +25,8 @@ the same change.
 ## Add
 
 - `setup.ps1` → new `@{ Url; Path }` row in `$repos`.
-- `CLAUDE.md` → folder-tree row (folder → GitHub name → one-liner).
+- `AGENTS.md` (the workspace rulebook; `CLAUDE.md` only imports it) → folder-tree row (folder → GitHub name → one-liner).
+- New repo root → `AGENTS.md` (canonical, tool-neutral) + `CLAUDE.md` (line 1 `@AGENTS.md`, then Claude-only notes); skills under `.claude/skills/`; never `.agents/` or `.codex/`. Convention + evidence: Vault `wiki/curated/agent-harnesses.md`.
 - `.gitignore` → `<Folder>/` entry under sub-repos (top-level folder only; grouping-folder children are already covered).
 - `.ignore` → matching `!<Folder>/` negation so root search reaches the new repo.
 - `GSADUs.code-workspace` → folder entry (skip only with a documented reason — pyRevit is the precedent).
@@ -40,7 +41,7 @@ the same change.
 - GitHub rename: exact steps (or `gh repo rename`) — **requires explicit user confirmation; never run unprompted**.
 - This machine: move the folder, then `git remote set-url origin <new-url>`.
 - `setup.ps1` → update the row's Url + Path.
-- `CLAUDE.md` → tree row, plus every other old-name mention (`git grep` the workspace repo).
+- `AGENTS.md` → tree row, plus every other old-name mention (`git grep` the workspace repo).
 - `.gitignore` / `.ignore` → rename both entries.
 - `GSADUs.code-workspace` → folder path.
 - Tools `ShellProfile\profile.ps1` → `$GSADUsDopplerRenders` target path if the repo has a Doppler-rendered env file (edit lands in the **gsadus-tools** repo; spec: Vault `wiki/curated/secrets-management.md`).
@@ -54,7 +55,7 @@ the same change.
 
 - Confirm archive intent; the GitHub archive itself is instructions + explicit confirmation, never automatic.
 - `setup.ps1` → remove the `$repos` row.
-- `CLAUDE.md` → move the repo to the retired section, keeping the guard sentences (do not extend; behavior/schemas are not pipeline contracts).
+- `AGENTS.md` → move the repo to the retired section, keeping the guard sentences (do not extend; behavior/schemas are not pipeline contracts).
 - `.gitignore` / `.ignore` → entries follow the folder: keep while it stays on disk, remove when it leaves.
 - `GSADUs.code-workspace` → remove the folder entry unless the read-only folder should still open in the hub.
 - Tools `ShellProfile\profile.ps1` → add to `$GSADUsRetiredRepos`; remove its `$GSADUsDopplerRenders` entry if present (**gsadus-tools** commit), and archive/delete its Doppler project per Vault `wiki/curated/secrets-management.md`.
@@ -74,3 +75,4 @@ the same change.
 
 - Vault `wiki/curated/wip-sync.md` → **"Claude Code machine-local state (NOT synced by git or wip)"** — memory migration and per-machine config after any rename/retire.
 - Vault `wiki/curated/workspaces.md` → **"How to add a new workspace"** — hub-page + registry procedure.
+- Vault `wiki/curated/agent-harnesses.md` → the `AGENTS.md` / `CLAUDE.md` / `.claude/skills` convention that `check-repo-registry.ps1` enforces on every repo root.

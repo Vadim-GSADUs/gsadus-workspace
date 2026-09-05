@@ -15,6 +15,9 @@ Surfaces cross-checked:
   - Vault\wiki\curated\workspaces.md registry <-> *.code-workspace files on disk
   - Vault\wiki\curated\key-locations.md Local Repos table <-> setup.ps1 $repos + retired-on-disk
   - Vault\wiki\curated\workspace-<name>.md hub pages <-> *.code-workspace files on disk
+  - AGENTS.md / CLAUDE.md pair per repo root (agent-harness convention, 2026-09-05):
+    AGENTS.md canonical, CLAUDE.md line 1 = @AGENTS.md, no .agents/ or .codex/ dirs,
+    no Codex-sync substitution artifacts, AGENTS.md within Codex's 32 KiB read cap
 
 Known legitimate exceptions encoded below:
   - PostProcess\ is a grouping folder, not a repo (its children are the repos)
@@ -224,11 +227,49 @@ foreach ($w in $wsOnDiskNorm) {
     }
 }
 
+# ── Agent-harness convention (Vault wiki/curated/agent-harnesses.md, 2026-09-05) ────────
+# AGENTS.md is the canonical, tool-neutral instruction file; CLAUDE.md is `@AGENTS.md` plus
+# Claude-only notes; skills live once under .claude/skills; no .agents/ or .codex/ directory
+# (those are the Codex import sync's copies). Checked at the workspace root, every active repo
+# root, and the nested instruction dirs listed here. Retired repos are never touched.
+$NestedInstructionDirs = @('pyRevit\GSADUs_Tools.extension')
+$SyncArtifacts    = @('Codex.ai', '.Codex/', '.Codex\', 'Codex Fable')   # what the sync's claude→Codex substitution leaves behind
+$AgentsMdMaxBytes = 32768   # Codex project_doc_max_bytes default — a larger AGENTS.md is silently truncated
+$harnessPairs = 0
+foreach ($rel in (@('.') + @($setupRepos) + $NestedInstructionDirs)) {
+    $dir   = if ($rel -eq '.') { $Root } else { Join-Path $Root $rel }
+    $label = if ($rel -eq '.') { '<workspace root>' } else { $rel }
+    if (-not (Test-Path -LiteralPath $dir)) { continue }   # a missing repo is already reported above
+    foreach ($gen in @('.agents', '.codex')) {
+        if (Test-Path -LiteralPath (Join-Path $dir $gen)) {
+            $drift.Add("$label has a '$gen\' directory — the Codex import sync's copy; delete it (skills have ONE copy under .claude\skills — Vault agent-harnesses.md)")
+        }
+    }
+    $agents = Join-Path $dir 'AGENTS.md'; $claude = Join-Path $dir 'CLAUDE.md'
+    $hasAgents = Test-Path -LiteralPath $agents; $hasClaude = Test-Path -LiteralPath $claude
+    if (-not ($hasAgents -or $hasClaude)) { continue }   # repos without agent instructions (Tools, AppsScript) have nothing to pair
+    if ($hasAgents -and -not $hasClaude) { $drift.Add("$label has AGENTS.md but no CLAUDE.md — add the importer (line 1 exactly '@AGENTS.md', then Claude-only notes)") }
+    if ($hasClaude -and -not $hasAgents) { $drift.Add("$label has CLAUDE.md but no AGENTS.md — AGENTS.md is the canonical file: move the rules there and leave CLAUDE.md as '@AGENTS.md' + Claude-only notes") }
+    if ($hasClaude) {
+        $first = Get-Content -LiteralPath $claude -TotalCount 1
+        if ($null -eq $first -or $first.Trim() -ne '@AGENTS.md') { $drift.Add("$label\CLAUDE.md line 1 must be exactly '@AGENTS.md' (found: '$first') — rule text belongs in AGENTS.md") }
+    }
+    if ($hasAgents) {
+        $raw = Get-Content -LiteralPath $agents -Raw
+        foreach ($a in $SyncArtifacts) {
+            if ($raw.Contains($a)) { $drift.Add("$label\AGENTS.md contains '$a' — a Codex-sync substitution artifact, not a real path or name") }
+        }
+        $len = (Get-Item -LiteralPath $agents).Length
+        if ($len -gt $AgentsMdMaxBytes) { $drift.Add("$label\AGENTS.md is $len bytes, over Codex's $AgentsMdMaxBytes-byte project_doc_max_bytes default — Codex silently truncates it; trim the file") }
+    }
+    if ($hasAgents -and $hasClaude) { $harnessPairs++ }
+}
+
 # ── Report ───────────────────────────────────────────────────────────────────
 if ($drift.Count -gt 0) {
     Write-Host "check-repo-registry: DRIFT — $($drift.Count) mismatch(es):" -ForegroundColor Red
     foreach ($m in $drift) { Write-Host "  - $m" -ForegroundColor Red }
     exit 1
 }
-Write-Host ("check-repo-registry: OK — {0} active repos, {1} retired; setup.ps1, disk, .gitignore, .ignore, hub workspace, Vault registry, {2} key-locations rows and {3} hub sources all consistent." -f $setupRepos.Count, $retiredRepos.Count, $keyLocRows.Count, $hubSourced.Count) -ForegroundColor Green
+Write-Host ("check-repo-registry: OK — {0} active repos, {1} retired; setup.ps1, disk, .gitignore, .ignore, hub workspace, Vault registry, {2} key-locations rows, {3} hub sources and {4} AGENTS.md/CLAUDE.md pairs all consistent." -f $setupRepos.Count, $retiredRepos.Count, $keyLocRows.Count, $hubSourced.Count, $harnessPairs) -ForegroundColor Green
 exit 0
