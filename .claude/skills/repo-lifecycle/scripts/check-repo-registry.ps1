@@ -17,7 +17,8 @@ Surfaces cross-checked:
   - Vault\wiki\curated\workspace-<name>.md hub pages <-> *.code-workspace files on disk
   - AGENTS.md / CLAUDE.md pair per repo root (agent-harness convention, 2026-09-05):
     AGENTS.md canonical, CLAUDE.md line 1 = @AGENTS.md, no .agents/ or .codex/ dirs,
-    no Codex-sync substitution artifacts, AGENTS.md within Codex's 32 KiB read cap
+    no Codex-sync substitution artifacts, AGENTS.md within Codex's 32 KiB read cap and the
+    200-line instruction-hygiene cap
 
 Known legitimate exceptions encoded below:
   - PostProcess\ is a grouping folder, not a repo (its children are the repos)
@@ -235,6 +236,7 @@ foreach ($w in $wsOnDiskNorm) {
 $NestedInstructionDirs = @('pyRevit\GSADUs_Tools.extension')
 $SyncArtifacts    = @('Codex.ai', '.Codex/', '.Codex\', 'Codex Fable')   # what the sync's claude→Codex substitution leaves behind
 $AgentsMdMaxBytes = 32768   # Codex project_doc_max_bytes default — a larger AGENTS.md is silently truncated
+$AgentsMdMaxLines = 200     # owner decision 2026-09-05: decisions, contracts, pointers only — detail lives in binding docs
 $harnessPairs = 0
 foreach ($rel in (@('.') + @($setupRepos) + $NestedInstructionDirs)) {
     $dir   = if ($rel -eq '.') { $Root } else { Join-Path $Root $rel }
@@ -261,6 +263,8 @@ foreach ($rel in (@('.') + @($setupRepos) + $NestedInstructionDirs)) {
         }
         $len = (Get-Item -LiteralPath $agents).Length
         if ($len -gt $AgentsMdMaxBytes) { $drift.Add("$label\AGENTS.md is $len bytes, over Codex's $AgentsMdMaxBytes-byte project_doc_max_bytes default — Codex silently truncates it; trim the file") }
+        $lineCount = ($raw.TrimEnd() -split "`r?`n").Count
+        if ($lineCount -gt $AgentsMdMaxLines) { $drift.Add("$label\AGENTS.md is $lineCount lines, over the $AgentsMdMaxLines-line cap — instruction files hold decisions, contracts and pointers; move detail to its binding doc (Vault agent-harnesses.md, Instruction hygiene)") }
     }
     if ($hasAgents -and $hasClaude) { $harnessPairs++ }
 }

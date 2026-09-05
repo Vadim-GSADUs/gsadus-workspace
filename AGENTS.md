@@ -34,16 +34,10 @@ C:\GSADUs\
 | `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | archived | PNGTools outgrew it |
 | `gsadus-site-check` | `SiteCheck\` | 2026-08-06 | **deleted 2026-08-11** | The Site Check module ships from `gsadus-web-app`; its live contract is `WebApp\docs\site-check\SPEC.md` |
 
-**`gsadus-site-check` has no remote at all** — the owner deleted the GitHub repository on
-2026-08-11 (not archived; it is gone). `C:\GSADUs\SiteCheck` remains on disk as read-only
-reference, but its `origin` still points at the deleted URL, so any fetch/pull/push from that
-folder will fail. That is expected — do not "fix" the remote, re-create the repo, or push the
-folder anywhere.
-
-The retired folders stay on disk as read-only reference but are excluded from `setup.ps1`,
-`wip`/`unwip` (see `$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`), and `.env` sync.
-Do not extend them or treat their behavior/schemas as pipeline contracts.
-Do not re-add retired repos to the workspace.
+The retired folders stay on disk read-only and are excluded from `setup.ps1`, `wip`/`unwip`
+(`$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`) and `.env` sync. Do not extend them,
+treat their schemas as contracts, or re-add them. `SiteCheck\` has no remote at all (the GitHub
+repo was deleted 2026-08-11): its `origin` fails by design — never re-point or re-create it.
 
 ## Dev Port Map (owner decision 2026-08-11)
 
@@ -132,6 +126,17 @@ the same files; nothing is duplicated per harness:
   here (`C:\GSADUs\AGENTS.md`) for the workspace rules; Claude Code walks the directory
   tree and reaches this file on its own.
 - The Next.js managed block (`nextjs-agent-rules`) lives in `AGENTS.md` only, committed.
+- **Cross-harness delegation runs through the shell, never through imported agent
+  definitions:** Claude → Codex via the openai-codex plugin (`codex exec`, foreground);
+  Codex → Claude via `.claude\skills\delegate-to-claude\SKILL.md` (a pinned, non-interactive
+  `claude -p` launch). The caller reviews every delegated diff before it lands.
+- **Instruction files stay lean** (owner decision 2026-09-05): an `AGENTS.md` holds only what
+  an agent cannot derive — owner decisions and contracts, environment facts (ports, secrets,
+  deploy disciplines), and pointers to binding docs and skills. Not architecture or file maps
+  (read the tree), not shipped-slice narrative (git has it), not one-time incidents (those go
+  to the repo's HANDOFF Gotchas with its date ratchet, or to agent memory), not guardrails
+  written for weaker models. Cap: 200 lines per `AGENTS.md`, enforced by the registry check;
+  a file near the cap means content belongs in its binding doc, not in a tighter rewrap.
 
 Repo add/rename/retire/archive: follow `.claude\skills\repo-lifecycle\SKILL.md` and finish
 with its `scripts\check-repo-registry.ps1` green — it also enforces this convention. Full
@@ -151,30 +156,16 @@ When starting a new session, read the relevant vault pages for context rather th
 
 ### Searching across repos (Vault included)
 
-Ripgrep (which powers Claude Code's Grep/Glob and Codex's search, plus `rg`/`fd` on the CLI) honors the root `.gitignore`, which excludes every
-sub-repo — so root searches would silently skip all repo content, including the Vault. The
-committed root **`.ignore`** re-includes the sub-repos for search only (git is unaffected; each
-sub-repo's own `.gitignore` still applies once ripgrep descends). If `.ignore` is ever missing
-(fresh clone before first sync), search the target repo directly (`path: C:\GSADUs\Vault`) or pass
-`rg --no-ignore-vcs`. Do **not** "fix" this by editing `.gitignore` — that would make git try to track the nested repos.
+Ripgrep (Claude Code's Grep/Glob, Codex's search, `rg`/`fd`) honors the root `.gitignore`, which
+excludes every sub-repo; the committed root **`.ignore`** re-includes them for search only (git
+is unaffected; each sub-repo's own `.gitignore` still applies once ripgrep descends). If
+`.ignore` is missing on a fresh clone, search the target repo directly or pass
+`rg --no-ignore-vcs` — never "fix" it in `.gitignore`. Three facts about root searches:
 
-**A root search spans every repo — attribute each hit before reporting it.** Because `.ignore`
-re-includes all sub-repos, results from `C:\GSADUs` mix repos in one flat list, and a file found
-there does **not** belong to the repo you are auditing. Three hazards, each with a real miss
-(2026-08-01 Tools audit, whose findings were three-for-five wrong):
+- Hits mix every repo in one list — attribute each to its repo before acting on it.
+- `.ignore` also hides `dist/`, `build/`, `node_modules/`, `.venv/`: never characterize build
+  output from a root search; `cd` into the repo or pass `--no-ignore`.
+- `<repo>\.claude\worktrees\<name>\` copies are searchable and may be stale branches.
 
-- **Cross-repo attribution.** A scratch-file sweep returned `Tools\ElementFilter\_t.py` and
-  `AppsScript\GSADUs Product List\debug_url.py` adjacent; the audit reported the AppsScript file as
-  living in Tools and asked for its deletion. Always re-anchor a finding by searching the target
-  repo directly before acting on it.
-- **`.ignore` hides `dist/`, `build/`, `node_modules/`, `.venv/`.** Those live in the noise block at
-  the bottom of `.ignore`, so root searches return **zero** hits inside them. The audit inferred a
-  non-existent `Tools/dist/` (the real ones are three per-tool `dist/` folders) and generalized
-  staleness to all three when one was byte-identical to its source. Never characterize build output
-  from a root search — `cd` into the repo, or pass `--no-ignore`.
-- **Agent worktrees are searchable.** `<repo>\.claude\worktrees\<name>\` copies show up in root
-  results and may be stale branch content. Prefer the real checkout unless you mean the worktree.
-
-Timestamps are not evidence of staleness either: two READMEs flagged "5 months stale" by mtime
-described current behavior accurately. Verify content, not dates. More generally, treat any audit's
-findings as **claims to re-verify at the file**, not as a work order — including this file's.
+Verify content, not timestamps, and treat any audit's findings as claims to re-verify at the
+file — including this file's.
