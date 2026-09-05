@@ -125,7 +125,9 @@ the same files; nothing is duplicated per harness:
   (workspace skills only in sessions started at `C:\GSADUs`); every other harness reads the
   relevant `SKILL.md` before the task. Never create `.agents/` or `.codex/` directories —
   the Codex app's *Import from another agent* sync wrote substituted copies there on
-  2026-09-05 and is turned off on both PCs for that reason.
+  2026-09-05; its repo-writing categories (Instructions, Skills, Commands, Hooks, Agents)
+  are off on both PCs for that reason. Only chats, plugins, MCP servers and memory sync,
+  and those land in `~\.codex`, never in a repo.
 - Codex's instruction chain stops at each repo's git root, so a sub-repo `AGENTS.md` points
   here (`C:\GSADUs\AGENTS.md`) for the workspace rules; Claude Code walks the directory
   tree and reaches this file on its own.
