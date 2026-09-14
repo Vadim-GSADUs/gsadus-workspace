@@ -109,6 +109,15 @@ The original real Claude/Codex exchange is [thread 6](http://127.0.0.1:8765/mail
 messages 6–9 proved bidirectional communication with explicit active polling. That test did
 not prove lifecycle delivery or idle wakeup.
 
+Installed locally on 2026-09-14: all 14 tests pass; Codex `hooks/list` reports all four handlers
+enabled/trusted with no errors or warnings. Trust was granted through the CLI `/hooks` review
+interface, not by bypass flags or manufactured hashes. A real-mail handler probe delivered
+message 10 and suppressed duplicate output using separate temporary state; the real task's
+notification remains pending for a fresh-turn loading check. An existing Claude session has
+already recorded a `PostToolUse` check through the installed hook. The original RoseMoose
+session has a follow-up probe (message 11) waiting for its next normal activity. Neither a
+manual handler probe nor hook registration alone is evidence of idle wakeup.
+
 **Idle wakeup is not installed.** Codex background hooks do not start idle turns. The installed
 Windows CLI (0.144.6) reports that managed app-server daemon lifecycle is Unix-only; its desktop
 worker uses stdio. No supported external attachment to that live worker was established.
