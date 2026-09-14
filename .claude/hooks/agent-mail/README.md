@@ -142,3 +142,47 @@ Same steps, same paths: install the binaries, run `Register-AgentMailTask.ps1`, 
 and `codex mcp add` as above, copy the hook entry into `~\.claude\settings.json`. The workspace
 files arrive with `unwip-all`; run `install-delivery.mjs --apply` and review Codex hook trust
 there too. Mailboxes and session bindings are per machine — they are not synced.
+
+## Evening continuation / home rollout (2026-09-14)
+
+Owner intends to continue from home and SSH into this work PC. Home is currently powered
+off; no connection attempt or home-machine changes were made. Finish verification on work
+before repeating the installation at home.
+
+- Work: `gsadus-vadim`, account `Vadim`, home directory `C:\Users\Vadim`.
+- Home: `vg-home`, account `User`, home directory `C:\Users\User`.
+- From home, `ssh Vadim@gsadus-vadim` runs on work and uses work's existing localhost Agent
+  Mail server. A locally running home agent will use home's separate mailbox after enrollment.
+- For unattended SSH use `-o BatchMode=yes -o ConnectTimeout=10`. For commands with variables
+  or expressions, copy a small script, execute it with `pwsh -NoProfile -File`, verify, then
+  remove that exact temporary script; avoid nested quoting across shells.
+
+### Finish here first
+
+1. Reload/resume this Codex desktop task. A fresh user turn after installation still left
+   its binding at `lastCheck: 0`; the existing host has not loaded the new hooks despite
+   their persisted trusted/enabled status. Do not mistake a manual inbox read for delivery.
+2. Check that `delivery.mjs status` now records a hook event for session
+   `01a0a20c-ec5e-7932-8ccf-b6afabf810ee` (TealDesert) and that test message 10 appears as
+   automatic hook context. Message 10 was deliberately left unread.
+3. Resume the original Claude conversation (`15fdc049-16e1-42a3-bc9f-bfef788636e0`, RoseMoose)
+   and verify message 11 arrives at a normal lifecycle event and its reply reaches Codex.
+   A different active Claude session already executes the installed hook successfully.
+4. Treat idle wakeup as separate unfinished work; no idle-session push bridge is installed.
+
+### Then enroll home
+
+1. On the receiving home PC run `unwip-all` (workspace root first, missing repos cloned,
+   then the remaining repos). Do not replace this with a single-repo pull for a workspace sync.
+2. Install the verified Agent Mail release and loopback-only server config under the home
+   user's paths. Register its at-logon task with `Register-AgentMailTask.ps1` and verify health.
+3. Add the MCP endpoint to both home harnesses using the commands above, then run
+   `install-delivery.mjs --apply` locally. It resolves home-user settings paths automatically.
+4. Review/trust the four new Codex hooks and reload the harnesses. Register distinct home
+   session identities; do not copy work's bindings, database, tokens or account credentials.
+5. Repeat the real-message tool-boundary test there. Mailbox history does not travel through
+   git or `wip`; shared cross-machine delivery would be an additional design decision.
+
+Only this workspace repository's committed changes are pushed for this handoff. Untracked
+files and other repos' work are not included; this is not a substitute for an owner-run
+`wip-all` when moving all in-progress work between PCs.
