@@ -89,9 +89,15 @@ export async function runHook(input, program, options = {}) {
       // Never guess an existing mailbox from its name, program or last-active time.
       const project = (options.project || canonicalProject)(input.cwd);
       await call('ensure_project', { human_key: project });
-      const profile = await call('register_agent', { project_key: project, program,
-        model: input.model || 'unknown',
-        task_description: `${path.basename(project)}: session ${input.session_id}` });
+      const description = `${path.basename(project)}: session ${input.session_id}`;
+      // Registration may finish server-side after a client timeout. Recover only an exact
+      // session marker before trying again, rather than creating a second mailbox.
+      const agents = await call('list_agents', { project_key: project, limit: 250 });
+      if (!Array.isArray(agents)) throw new Error('Invalid agent roster');
+      const existing = agents.filter(a => a.program === program && a.task_description === description);
+      if (existing.length > 1) throw new Error('Ambiguous session registration');
+      const profile = existing[0] || await call('register_agent', { project_key: project, program,
+        model: input.model || 'unknown', task_description: description });
       binding = { version: 1, session: input.session_id, program, project, agent: profile.name,
         notified: [], lastCheck: 0, announced: false };
       // Deliberately never persist or echo registration tokens in hook output.
@@ -127,7 +133,7 @@ export async function runHook(input, program, options = {}) {
 }
 export async function bindSession({ program, session, project, agent, root = stateRoot(), call = rpc }) {
   if (!PROGRAMS.has(program) || !session || !project || !agent) throw new Error('bind requires program, session, project, agent');
-  const profile = await call('whois', { project_key: project, agent_name: agent });
+  const profile = await call('whois', { project_key: project, agent_name: agent, include_recent_commits: false });
   if (profile.program !== program) throw new Error('Mailbox belongs to a different harness');
   fs.mkdirSync(root, { recursive: true });
   // Prevent accidental sharing of one mailbox by different bound sessions.

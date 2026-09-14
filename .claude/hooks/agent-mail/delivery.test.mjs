@@ -15,6 +15,7 @@ function fixture(t) {
   const call = async (name, args) => {
     calls.push({ name, args });
     if (name === 'ensure_project') return {};
+    if (name === 'list_agents') return [];
     if (name === 'register_agent') return { name: `BlueBird${++count}`, registration_token: 'NEVER-ECHO-ME' };
     if (name === 'whois') return { name: args.agent_name, program: 'codex-cli' };
     if (name === 'fetch_inbox') return inbox;
@@ -122,6 +123,17 @@ test('concurrent copies of a hook do not register or deliver twice', async t => 
   const results = await Promise.all([runHook(f.input, 'codex-cli', f.options), runHook(f.input, 'codex-cli', f.options)]);
   assert.equal(results.filter(r => r.hookSpecificOutput).length, 1);
   assert.equal(f.calls.filter(c => c.name === 'register_agent').length, 1);
+});
+test('uncertain registration is recovered by the exact session marker', async t => {
+  const f = fixture(t);
+  const call = async (name, args) => name === 'list_agents' ? [
+    { name: 'RecoveredBird', program: 'codex-cli', task_description: `${path.basename(f.root)}: session session-1` },
+    { name: 'OtherBird', program: 'codex-cli', task_description: `${path.basename(f.root)}: session session-2` },
+  ] : f.options.call(name, args);
+  const output = await runHook(f.input, 'codex-cli', { ...f.options, call });
+  assert.match(output.hookSpecificOutput.additionalContext, /RecoveredBird/);
+  assert.doesNotMatch(output.hookSpecificOutput.additionalContext, /OtherBird/);
+  assert(!f.calls.some(c => c.name === 'register_agent'));
 });
 test('MCP transport accepts JSON and SSE and rejects tool errors', async t => {
   let mode = 'json';
