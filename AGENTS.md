@@ -142,6 +142,26 @@ Repo add/rename/retire/archive: follow `.claude\skills\repo-lifecycle\SKILL.md` 
 with its `scripts\check-repo-registry.ps1` green — it also enforces this convention. Full
 spec, evidence, and the options weighed: `Vault\wiki\curated\agent-harnesses.md`.
 
+### Agent Mail — the channel between concurrent sessions (owner decision 2026-09-14)
+
+MCP Agent Mail (`mcp-agent-mail` 0.3.35) runs locally at `http://127.0.0.1:8765/mcp/` for both
+harnesses (Claude: user-scope MCP server `agent-mail`; Codex: `[mcp_servers.agent_mail]` in
+`~\.codex\config.toml`). It is pull-based mail plus **advisory** file leases: nothing interrupts
+a live session and a lease never blocks a write. The worktree-per-agent rule still stands
+(`git worktree add <repo>\.claude\worktrees\<name> -b <name>`).
+
+- **Register at session start:** `register_agent(project_key=<repo root, e.g. C:\GSADUs\WebApp>,
+  program="claude-code"|"codex-cli", model=<yours>, task_description="<repo>: <slice>")`. The
+  server assigns the name (adjective+noun, e.g. `RoseMoose`; descriptive names are rejected), so
+  the harness lives in `program` and the repo/slice in `task_description`. Find earlier identities
+  with `list_agents` and re-register the same name to keep a thread.
+- **Read the inbox** (`fetch_inbox`) at start, before every commit and before every push. Reply on
+  the existing thread (`reply_message`); `acknowledge_message` when the sender asked for an ack.
+- **Reserve before editing** a file another agent may hold: `file_reservation_paths` (project-
+  relative paths, `exclusive=true`, a short `ttl_seconds`), `release_file_reservations` when done.
+- The owner reads everything at `http://127.0.0.1:8765/mail/`. Server start/stop, the at-logon
+  task and the Claude SessionStart hook: `.claude\hooks\agent-mail\README.md`.
+
 ## Project Context — The Vault
 
 All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions.
