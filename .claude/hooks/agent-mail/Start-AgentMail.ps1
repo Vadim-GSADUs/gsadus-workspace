@@ -6,7 +6,7 @@
 .DESCRIPTION
     One entry point for every launcher on this machine:
       - the at-logon scheduled task  GSADUs\mcp-agent-mail   (Register-AgentMailTask.ps1)
-      - the Claude Code SessionStart hook                    (SessionStart-AgentMail.ps1)
+      - the shared Claude Code / Codex SessionStart handler  (delivery.mjs)
       - the owner, by hand:  pwsh -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1 [-Stop]
 
     Binary resolution (first hit wins): $env:AGENT_MAIL_HOME\mcp-agent-mail.exe,

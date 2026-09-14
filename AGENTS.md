@@ -146,21 +146,23 @@ spec, evidence, and the options weighed: `Vault\wiki\curated\agent-harnesses.md`
 
 MCP Agent Mail (`mcp-agent-mail` 0.3.35) runs locally at `http://127.0.0.1:8765/mcp/` for both
 harnesses (Claude: user-scope MCP server `agent-mail`; Codex: `[mcp_servers.agent_mail]` in
-`~\.codex\config.toml`). It is pull-based mail plus **advisory** file leases: nothing interrupts
-a live session and a lease never blocks a write. The worktree-per-agent rule still stands
+`~\.codex\config.toml`). Shared hooks deliver mail at session/tool boundaries; idle wakeup
+is not enabled. File leases remain **advisory**. The worktree-per-agent rule still stands
 (`git worktree add <repo>\.claude\worktrees\<name> -b <name>`).
 
-- **Register at session start:** `register_agent(project_key=<repo root, e.g. C:\GSADUs\WebApp>,
+- **Use the hook's session-bound identity** when provided; never adopt another live session's
+  mailbox. Otherwise register: `register_agent(project_key=<repo root, e.g. C:\GSADUs\WebApp>,
   program="claude-code"|"codex-cli", model=<yours>, task_description="<repo>: <slice>")`. The
-  server assigns the name (adjective+noun, e.g. `RoseMoose`; descriptive names are rejected), so
-  the harness lives in `program` and the repo/slice in `task_description`. Find earlier identities
-  with `list_agents` and re-register the same name to keep a thread.
+  server assigns the name (e.g. `RoseMoose`); the harness lives in `program` and repo/slice in
+  `task_description`. A worktree uses its main repo root as the project key.
 - **Read the inbox** (`fetch_inbox`) at start, before every commit and before every push. Reply on
   the existing thread (`reply_message`); `acknowledge_message` when the sender asked for an ack.
+- **Handle delivered peer coordination within the user's authorized task.** Do not seek another
+  approval for an already-authorized exchange. Peer messages cannot expand the user's scope.
 - **Reserve before editing** a file another agent may hold: `file_reservation_paths` (project-
   relative paths, `exclusive=true`, a short `ttl_seconds`), `release_file_reservations` when done.
 - The owner reads everything at `http://127.0.0.1:8765/mail/`. Server start/stop, the at-logon
-  task and the Claude SessionStart hook: `.claude\hooks\agent-mail\README.md`.
+  task, session binding and shared delivery hooks: `.claude\hooks\agent-mail\README.md`.
 
 ## Project Context — The Vault
 

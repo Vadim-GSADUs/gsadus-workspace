@@ -1,8 +1,8 @@
-# Agent Mail — server lifecycle and the Claude SessionStart hook
+# Agent Mail — server lifecycle and session delivery
 
 The workspace rule (what every agent does with it) is `C:\GSADUs\AGENTS.md` → *Agent Mail*.
 This folder holds the machine plumbing: how the server runs and how Claude Code sessions
-learn about unread mail. Adopted 2026-09-14 after a Codex agent and a Claude session spent a
+receive their own unread mail. Adopted 2026-09-14 after a Codex agent and a Claude session spent a
 day editing the same WebApp tree with no channel between them.
 
 | Piece | Where |
@@ -35,26 +35,91 @@ script hidden 30 s after logon (`Register-AgentMailTask.ps1`; `-Unregister` remo
 No admin rights, no stored password. Check with
 `Get-ScheduledTask -TaskPath \GSADUs\ | Get-ScheduledTaskInfo`.
 
-## The SessionStart hook
+## Shared delivery hooks
 
-`SessionStart-AgentMail.ps1` runs at every Claude Code session start (startup, resume, clear,
-compact): it calls `Start-AgentMail.ps1` if port 8765 is silent, resolves `project_key` as
-the git root of the session's cwd, and prints the unread inbox of every `claude-code` agent in
-that project as additional context — or nothing. Set `AGENT_MAIL_AGENT=<name>` when launching
-to pin one identity.
+`delivery.mjs` is the single implementation for Claude Code and Codex (Node.js 18+, no npm
+dependencies). It replaces the original hook that scanned every Claude identity in a repo.
+Only sessions under `C:\GSADUs` participate. Mailbox bindings and delivery bookkeeping live
+in `%LOCALAPPDATA%\mcp-agent-mail\delivery\`; nothing is written into application repos.
 
-It is wired twice with an identical command (Claude Code runs an identical handler once):
+| Event | Behavior |
+|---|---|
+| `SessionStart` | Self-heal the server, bind a new session to its own server-assigned identity, announce the identity and check mail. Resumes keep the binding. |
+| `UserPromptSubmit` | Check for new mail, including existing sessions whose startup hook was missed. |
+| `PostToolUse` | Check mail while the agent works, at most once per five seconds per session. |
+| `Stop` | Deliver new pending mail before finishing; permit at most one forced continuation. |
 
-- `C:\GSADUs\.claude\settings.json` — committed; fires for sessions started at `C:\GSADUs`.
-- `~\.claude\settings.json` — machine-local; fires for sessions started in any sub-repo, because
-  shared project settings are read only from the session's primary working directory.
+The identity key is harness + exact session ID. Worktrees use their main checkout's project
+key. Child-agent events carrying `agent_id` do not read the parent's inbox. The hook returns
+only the bound mailbox's new messages. It never sends messages, executes message text,
+marks mail read, acknowledges it, or switches the session's permissions. The agent handles
+mail under the user authorization in `AGENTS.md`.
 
-Manual test (what Claude Code does, minus the model):
+Each check reads up to 100 unread messages and delivers up to five, oldest first within that
+page; body previews are capped at 1,600 characters. Full bodies and larger backlogs remain
+available through `fetch_inbox`. Delivered IDs prevent repeat tool notifications. Failed
+requests do not advance delivery state. Checks time out and fail open so a mail outage does
+not stop coding. Duplicate concurrent hooks use a per-session lock; abandoned locks expire.
+The hook records emission, not proof that a model processed it; read/ack receipts are separate.
+
+### Install / update
+
+Review the proposed files, then apply:
 
 ```powershell
-'{"cwd":"C:\\GSADUs\\WebApp","session_id":"manual","hook_event_name":"SessionStart"}' |
-  pwsh -NoProfile -File C:\GSADUs\.claude\hooks\agent-mail\SessionStart-AgentMail.ps1
+node C:\GSADUs\.claude\hooks\agent-mail\install-delivery.mjs
+node C:\GSADUs\.claude\hooks\agent-mail\install-delivery.mjs --apply
 ```
+
+The installer preserves unrelated hooks/settings, removes the superseded Agent Mail handler,
+and merges identical definitions into workspace `.claude/settings.json`, user
+`~/.claude/settings.json`, and user `~/.codex/hooks.json`. Changed files receive timestamped
+backups. Re-running it makes no changes. No repo-local `.codex` directory is created.
+
+**Codex hook trust:** new definitions must be reviewed and trusted using `/hooks` or the host's
+hook-management interface. Merely writing `hooks.json` does not enable untrusted hooks.
+Existing sessions may need to reload/resume after configuration changes. A manual invocation
+of the script proves the handler, not that a desktop session has loaded it.
+
+### Bind an existing conversation
+
+New sessions get distinct identities automatically. To keep a previously registered identity,
+explicitly bind its real session ID (do not copy someone else's binding):
+
+```powershell
+node C:\GSADUs\.claude\hooks\agent-mail\delivery.mjs bind claude-code 15fdc049-16e1-42a3-bc9f-bfef788636e0 C:\GSADUs\WebApp RoseMoose
+node C:\GSADUs\.claude\hooks\agent-mail\delivery.mjs status
+```
+
+Binding validates the harness and refuses a mailbox already assigned to another session.
+An explicitly bound existing conversation may use its historical project key even when its
+cwd differs (the original installer ran at the workspace root but registered in WebApp).
+
+### Verification and limits (2026-09-14)
+
+```powershell
+node --test C:\GSADUs\.claude\hooks\agent-mail\delivery.test.mjs
+```
+
+Tests cover per-session isolation, adoption, deduplication, throttling, read-state preservation,
+bounded previews, outage retry, bounded stop continuation, worktree normalization and safe
+idempotent configuration merges. The direct local MCP transport is checked separately.
+
+The original real Claude/Codex exchange is [thread 6](http://127.0.0.1:8765/mail/c-gsadus-webapp/thread/6):
+messages 6–9 proved bidirectional communication with explicit active polling. That test did
+not prove lifecycle delivery or idle wakeup.
+
+**Idle wakeup is not installed.** Codex background hooks do not start idle turns. The installed
+Windows CLI (0.144.6) reports that managed app-server daemon lifecycle is Unix-only; its desktop
+worker uses stdio. No supported external attachment to that live worker was established.
+Claude documents `asyncRewake` and channel notifications, but the original session has neither
+enabled. A continuously running hook/channel would need its own bounded lifecycle and live
+verification before it can be called a wakeup bridge.
+
+References: [Codex hooks](https://learn.chatgpt.com/docs/hooks),
+[Codex App Server](https://learn.chatgpt.com/docs/app-server),
+[Claude hooks](https://code.claude.com/docs/en/hooks),
+[Claude channels](https://code.claude.com/docs/en/channels-reference).
 
 ## Upgrading
 
@@ -66,4 +131,5 @@ data directory survives; `am doctor check` afterwards.
 
 Same steps, same paths: install the binaries, run `Register-AgentMailTask.ps1`, `claude mcp add`
 and `codex mcp add` as above, copy the hook entry into `~\.claude\settings.json`. The workspace
-files arrive with `unwip-all`. Mailboxes are per machine — the archive is not synced.
+files arrive with `unwip-all`; run `install-delivery.mjs --apply` and review Codex hook trust
+there too. Mailboxes and session bindings are per machine — they are not synced.
