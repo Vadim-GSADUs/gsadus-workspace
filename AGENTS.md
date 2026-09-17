@@ -95,6 +95,10 @@ Auth is `SENTRY_AUTH_TOKEN`, read from Doppler `webapp/dev` at call time (never 
 Reach for a Sentry MCP connector (claude.ai's, or one wired into the harness you are in) only for what the probe cannot do (Seer, updates).
 Details: `Tools\Sentry\README.md`.
 
+## Deployment readiness — WebApp and PM
+
+After an authorized push, use `pwsh -NoProfile -File C:/GSADUs/Tools/Vercel/Wait-Deployment.ps1 -Project WebApp -Commit <full-pushed-SHA>` (`PM` for PM). Follow its yielding process promptly; no fixed sleeps or indirect GitHub polling for Vercel readiness. READY is separate from CI/application checks. Workflow and native CLI: `Tools/Vercel/README.md`.
+
 ## Rules for AI Agents
 
 1. **One repo = one direct subfolder of `C:\GSADUs\`.** Never create project files inside an existing repo folder unless you are actively working on that repo.
