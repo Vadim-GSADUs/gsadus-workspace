@@ -17,6 +17,7 @@ C:\GSADUs\
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
 ├── Shared\               gsadus-shared                 Shared internal npm packages (GitHub Packages; @gsadus/pipedrive)
 ├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
+├── Studio\               gsadus-studio                 Interior Studio: Blender-rendered kitchen/bath rooms re-skinned from the Design Bundles catalog
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault
 ├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype

@@ -24,6 +24,7 @@ $repos = @(
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-pyrevit.git";            Path = "pyRevit" },
     @{ Url = "git@github.com:gsadus/gsadus-shared.git";                   Path = "Shared" },
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-studio.git";           Path = "Studio" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault.git";              Path = "Vault" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-app.git";            Path = "WebApp" },
