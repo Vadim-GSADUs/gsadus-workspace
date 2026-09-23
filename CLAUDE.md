@@ -10,5 +10,10 @@ file holds only what Claude Code alone acts on.
 - `.claude\settings.json` runs two SessionStart hooks: the current date/time, and the
   unresolved wip-conflict banner (`C:\GSADUs\.wip-conflict.md`). `settings.local.json` is the
   machine-local allowlist (gitignored).
+- Vercel deploys are watched by a user-level hook (per machine; install or repair with
+  `node .claude\hooks\vercel-deploy\install.mjs --apply`): after any `git push` of `main` in a
+  Vercel-linked repo (WebApp, PM) it waits in the background and wakes the agent when
+  production is live or failed, through `Tools\Vercel\Wait-Deployment.ps1` (the one waiter;
+  AGENTS.md → Deployment readiness). Never hand-roll a deploy poll.
 - Agent worktrees live at `<repo>\.claude\worktrees\<name>\` and are searchable from here —
   attribute hits before acting (AGENTS.md → Searching across repos).

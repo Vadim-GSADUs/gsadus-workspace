@@ -97,7 +97,7 @@ Details: `Tools\Sentry\README.md`.
 
 ## Deployment readiness — WebApp and PM
 
-After an authorized push, use `pwsh -NoProfile -File C:/GSADUs/Tools/Vercel/Wait-Deployment.ps1 -Project WebApp -Commit <full-pushed-SHA>` (`PM` for PM). Follow its yielding process promptly; no fixed sleeps or indirect GitHub polling for Vercel readiness. READY is separate from CI/application checks. Workflow and native CLI: `Tools/Vercel/README.md`.
+A push of `main` in WebApp or PM is watched automatically: a user-level Claude Code hook (`.claude/hooks/vercel-deploy`, installed per machine by its `install.mjs --apply`) runs the waiter below in the background and wakes the agent when production is Ready or failed. Do not start a second wait. Without the hook (another harness, a preview), after an authorized push use `pwsh -NoProfile -File C:/GSADUs/Tools/Vercel/Wait-Deployment.ps1 -Project WebApp -Commit <full-pushed-SHA>` (`PM` for PM). Follow its yielding process promptly; no fixed sleeps or indirect GitHub polling for Vercel readiness. READY is separate from CI/application checks. Workflow and native CLI: `Tools/Vercel/README.md`.
 
 ## Rules for AI Agents
 
