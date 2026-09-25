@@ -1,6 +1,6 @@
 ---
 name: helpdesk
-description: Read, triage and work GSADUs staff helpdesk tickets (HD-n) — bugs, confusing UI, ideas and access requests staff file about WebApp, PM, PNGTools, pyRevit, Studio or IT — with the `helpdesk` command, owner approval, one-session claims, worktree fixes and QUEUE.md parking. Use when the user mentions the helpdesk, a ticket or HD-number, staff feedback or bug reports, or asks to triage, approve, claim, fix or close tickets.
+description: Read, triage and work GSADUs staff helpdesk tickets (HD-n) — bugs, confusing UI, ideas and access requests staff file about WebApp, PM or IT — with the `helpdesk` command, owner approval, one-session claims, worktree fixes and QUEUE.md parking. Use when the user mentions the helpdesk, a ticket or HD-number, staff feedback or bug reports, or asks to triage, approve, claim, fix or close tickets.
 ---
 
 # helpdesk — staff tickets, worked by agents
@@ -44,10 +44,10 @@ For each `new` or `reopened` ticket:
 2. Map the product to its repo:
    - `webapp` → `C:\GSADUs\WebApp`
    - `pm` → `C:\GSADUs\PM`
-   - `pngtools` → `C:\GSADUs\PostProcess\PNGTools`
-   - `pyrevit` → `C:\GSADUs\pyRevit`
-   - `studio` → `C:\GSADUs\Studio`
-   - `it` and `other` → the owner
+   - `it` → the owner (accounts, access, devices; usually no code)
+
+   Only the two apps staff share take tickets. The owner's own tools (PNGTools, pyRevit,
+   Studio and the rest) never do; the owner fixes those directly.
 3. Find the page or command and the files involved. Check related Sentry events with
    `sentry-probe` (the ticket may carry an event ID). Look for duplicates in `helpdesk list --all`.
 4. Record exactly one outcome:
