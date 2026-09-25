@@ -29,6 +29,13 @@ node C:/GSADUs/Tools/Helpdesk/helpdesk.mjs list      # any shell (Git Bash, Code
    that window. Never change tickets with SQL or any other route around the command.
 5. **Screenshots may show client names, addresses or deal values.** Read them to understand
    the ticket; never paste them into commits, PRs, Chat or anywhere outside this machine.
+6. **Staff read the ticket's Chat thread.** The command posts every visible change to it as the
+   GSADUs staff bot: the `ask` question, the `reject` reason and the `resolve` resolution go
+   out word for word. Write those for the reporter, in plain language, with no file paths,
+   code or client details. Triage notes, fix summaries and `comment` stay in the history.
+   To tell the reporter something, use `helpdesk reply <n> --as … "<text>"`; never post as the
+   owner. Exit code 3 means the change is saved but its post failed: tell the owner, and don't
+   re-run the command.
 
 ## Triage (read-only: never change code while triaging)
 
