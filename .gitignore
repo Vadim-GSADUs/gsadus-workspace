@@ -1,17 +1,18 @@
 # Sub-repos — each managed independently
-AppSheetCatalog/
-AppsScript/
-Dashboard/
-PM/
-PostProcess/
-pyRevit/
-Shared/
-SiteCheck/
-Studio/
-Tools/
-Vault/
-WebApp/
-WebCatalog/
+/AppSheetCatalog/
+/AppsScript/
+/Dashboard/
+/Helpdesk/
+/PM/
+/PostProcess/
+/pyRevit/
+/Shared/
+/SiteCheck/
+/Studio/
+/Tools/
+/Vault/
+/WebApp/
+/WebCatalog/
 
 # Temp / machine-specific
 *.addin

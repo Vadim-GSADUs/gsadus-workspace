@@ -27,7 +27,7 @@ the same change.
 - `setup.ps1` → new `@{ Url; Path }` row in `$repos`.
 - `AGENTS.md` (the workspace rulebook; `CLAUDE.md` only imports it) → folder-tree row (folder → GitHub name → one-liner).
 - New repo root → `AGENTS.md` (canonical, tool-neutral) + `CLAUDE.md` (line 1 `@AGENTS.md`, then Claude-only notes); skills under `.claude/skills/`; never `.agents/` or `.codex/`. Convention + evidence: Vault `wiki/curated/agent-harnesses.md`.
-- `.gitignore` → `<Folder>/` entry under sub-repos (top-level folder only; grouping-folder children are already covered).
+- `.gitignore` → anchored `/<Folder>/` entry under sub-repos (top-level folder only; grouping-folder children are already covered). Unanchored, it would also hide any nested folder of that name.
 - `.ignore` → matching `!<Folder>/` negation so root search reaches the new repo.
 - `GSADUs.code-workspace` → folder entry (skip only with a documented reason — pyRevit is the precedent).
 - Vault `wiki/curated/workspaces.md` → registry row; follow its "How to add a new workspace" for the hub page + frontmatter.

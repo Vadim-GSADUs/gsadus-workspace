@@ -108,9 +108,17 @@ foreach ($r in $retiredRepos) {
 $expectedTop = @($setupRepos | ForEach-Object { ($_ -split '[\\/]')[0] } | Sort-Object -Unique)
 
 # ── .gitignore: coverage + dead directory entries ────────────────────────────
+# Sub-repo entries are anchored (`/PM/`): an unanchored `Helpdesk/` also ignored the tracked
+# .claude\skills\helpdesk\ on this case-insensitive disk (2026-09-30). Recovery/ stays unanchored.
 $gitignoreLines = Get-Content -LiteralPath $gitignorePath | ForEach-Object { $_.Trim() }
-$gitignoreDirs  = @($gitignoreLines | Where-Object { $_ -match '^([A-Za-z][A-Za-z0-9._ -]*)/$' } |
-                    ForEach-Object { $_.TrimEnd('/') })
+$gitignoreDirs  = @($gitignoreLines | Where-Object { $_ -match '^/?([A-Za-z][A-Za-z0-9._ -]*)/$' } |
+                    ForEach-Object { $_.Trim('/') })
+foreach ($g in @($gitignoreLines | Where-Object { $_ -match '^[A-Za-z][A-Za-z0-9._ -]*/$' })) {
+    $name = $g.TrimEnd('/')
+    if (($GitignoreNonRepo -notcontains $name) -and ($expectedTop -contains $name)) {
+        $drift.Add(".gitignore entry '$g' is unanchored: write '/$g' so it cannot hide a nested folder of the same name")
+    }
+}
 foreach ($t in $expectedTop) {
     if ($gitignoreDirs -notcontains $t) { $drift.Add(".gitignore is missing the '$t/' sub-repo entry") }
 }

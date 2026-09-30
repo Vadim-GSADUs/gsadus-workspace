@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mergeHook } from './install.mjs';
 
-const CLI = 'C:\\GSADUs\\Tools\\Helpdesk\\helpdesk.mjs';
+const CLI = 'C:\\GSADUs\\Helpdesk\\bin\\helpdesk.ts';
 const unrelated = {
   model: 'x',
   hooks: {
@@ -26,7 +26,14 @@ test('adds one SessionStart handler per harness and keeps everything else', () =
 test('re-running is idempotent and replaces an older definition', () => {
   const once = mergeHook(unrelated, 'claude', CLI);
   assert.deepEqual(mergeHook(once, 'claude', CLI), once);
-  const moved = mergeHook(once, 'claude', 'D:\\Elsewhere\\Tools\\Helpdesk\\helpdesk.mjs');
+  const moved = mergeHook(once, 'claude', 'D:\\Elsewhere\\Helpdesk\\bin\\helpdesk.ts');
   assert.equal(moved.hooks.SessionStart.length, 2);
   assert.match(moved.hooks.SessionStart[1].hooks[0].command, /D:\\Elsewhere/);
+});
+
+test("replaces the command's old Tools definition", () => {
+  const old = mergeHook(unrelated, 'claude', 'C:\\GSADUs\\Tools\\Helpdesk\\helpdesk.mjs');
+  const moved = mergeHook(old, 'claude', CLI);
+  assert.equal(moved.hooks.SessionStart.length, 2);
+  assert.equal(moved.hooks.SessionStart[1].hooks[0].command, `node "${CLI}" status --hook claude`);
 });

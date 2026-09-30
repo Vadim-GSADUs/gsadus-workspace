@@ -11,8 +11,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const CLI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'Tools', 'Helpdesk', 'helpdesk.mjs');
-const OURS = /Helpdesk[\\/]+helpdesk\.mjs"?\s+status\s+--hook/i;
+const CLI = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'Helpdesk', 'bin', 'helpdesk.ts');
+// Also matches the command's old home (Tools\Helpdesk\helpdesk.mjs, until 2026-09-30), so re-running
+// the installer moves the hook; drop that form once both PCs have re-run it.
+const OURS = /Helpdesk[\\/]+(?:bin[\\/]+helpdesk\.ts|helpdesk\.mjs)"?\s+status\s+--hook/i;
 
 export function mergeHook(config, program, cli = CLI) {
   const next = structuredClone(config);
