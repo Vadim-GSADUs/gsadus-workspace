@@ -10,7 +10,7 @@ day editing the same WebApp tree with no channel between them.
 | Binaries `mcp-agent-mail.exe` (server) and `am.exe` (operator CLI), v0.3.35, [Rust rewrite](https://github.com/Dicklesworthstone/mcp_agent_mail_rust) | `%LOCALAPPDATA%\Programs\mcp-agent-mail\` (on the user PATH; upstream `install.ps1` default) |
 | Server config (`HTTP_HOST=127.0.0.1`, `HTTP_PORT=8765`, `HTTP_ALLOW_LOCALHOST_UNAUTHENTICATED=true`) | `~\.config\mcp-agent-mail\config.env` |
 | Data: SQLite + Git mailbox archive | `~\.local\share\mcp-agent-mail\git_mailbox_repo\` |
-| Server stdout/stderr | `%LOCALAPPDATA%\mcp-agent-mail\server.out.log`, `server.err.log` |
+| Server stdout/stderr (written only by the task; see *App containers*) | `%LOCALAPPDATA%\mcp-agent-mail\server.out.log`, `server.err.log` |
 | MCP endpoint / owner inbox | `http://127.0.0.1:8765/mcp/` / `http://127.0.0.1:8765/mail/` |
 | Claude Code client | `claude mcp add --scope user --transport http agent-mail http://127.0.0.1:8765/mcp/` (in `~\.claude.json`) |
 | Codex client (app + CLI share it) | `codex mcp add agent_mail --url http://127.0.0.1:8765/mcp/` → `[mcp_servers.agent_mail]` in `~\.codex\config.toml` |
@@ -21,19 +21,75 @@ point (the owner's browser, both harnesses, git hooks). Nothing leaves the machi
 ## Start / stop
 
 ```powershell
-pwsh -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1          # start if not listening (idempotent)
+pwsh -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1          # start via the task if not listening (idempotent)
 pwsh -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1 -Stop    # stop
 Invoke-RestMethod http://127.0.0.1:8765/healthz                            # {"status":"alive"}
 ```
 
-`Start-AgentMail.ps1` resolves the binary from `$env:AGENT_MAIL_HOME`, then the install
-default, then PATH — nothing machine-specific is committed. It also creates the data
-directory, which the server refuses to create itself on a fresh machine.
+**The per-user Task Scheduler task `\GSADUs\mcp-agent-mail` is the only launcher.** It runs
+`Start-AgentMail.ps1 -FromTask` hidden, 30 s after logon and whenever `Start-AgentMail.ps1`
+runs without `-FromTask` (the hook, the owner, an agent). That mode starts the task and waits
+for the port. No admin rights, no stored password. `Register-AgentMailTask.ps1` registers
+the task and runs it once; `-Unregister` removes it. Check with
+`Get-ScheduledTask -TaskPath \GSADUs\ | Get-ScheduledTaskInfo`. Never pass `-FromTask` by
+hand: it launches the server from the calling process.
 
-**Auto-start:** the per-user Task Scheduler task `\GSADUs\mcp-agent-mail` runs the same
-script hidden 30 s after logon (`Register-AgentMailTask.ps1`; `-Unregister` removes it).
-No admin rights, no stored password. Check with
-`Get-ScheduledTask -TaskPath \GSADUs\ | Get-ScheduledTaskInfo`.
+In `-FromTask` mode the script resolves the binary from `$env:AGENT_MAIL_HOME`, then the
+install default, then PATH, so nothing machine-specific is committed. It creates the data
+directory, which the server refuses to create on a fresh machine. It waits up to 60 s, and
+never launches a second server while one is still starting.
+
+## App containers: why every start goes through the task (2026-09-25)
+
+The Claude and Codex desktop apps are MSIX packages. A process started from inside one joins
+that app's job and file-system container. That includes a hook, an agent's tool shell, or
+the app's terminal panel. Windows kills the process when the app restarts or updates. New
+AppData folders the process creates land in `%LOCALAPPDATA%\Packages\<package>\LocalCache\`.
+Full root cause: `C:\GSADUs\Tools\ShellProfile\SETUP-VERIFICATION.md` → *Docker repair*.
+
+Before this change, the `SessionStart` hook ran `Start-AgentMail.ps1`, which launched the
+server with `Start-Process`. So any server a hook self-healed lived inside that session's
+app. On-disk evidence, 2026-09-25:
+
+- **The live server (PID 25460) came from the task.** The task ran at 08:16:48 on 9/24 (boot
+  08:16:03). The server's log is in the real `%LOCALAPPDATA%\mcp-agent-mail\`, and it survived
+  the 14:29 Claude update. The task still recorded result 1: a cold start took about 10 s,
+  and the old script gave up after 8 s.
+- **A Claude session's hook started a second server** inside the Claude app during those
+  seconds. It exited at once, because the first server held the database lock and the port.
+  Its log went to
+  `Packages\Claude_pzs8sxrjxfjjc\LocalCache\Local\mcp-agent-mail\server.err.log`. That folder
+  dates from the 9/14 install, which also started the server from a Claude session.
+- **Inside the Claude app, that LocalCache copy shadows the real log.** Reading
+  `%LOCALAPPDATA%\mcp-agent-mail\server.err.log` from a Claude agent shell shows the dead
+  duplicate's 9/24 "database locked" error, not the live log. Read the live log from outside
+  the app, for example
+  `wsl -e tail /mnt/c/Users/<user>/AppData/Local/mcp-agent-mail/server.err.log`.
+- **No data split.** The database, Git archive and config are under `~\.local\share` and
+  `~\.config`, outside AppData, so they are never redirected. WSL (outside every container)
+  shows all delivery state in the real `%LOCALAPPDATA%\mcp-agent-mail\delivery\`, and neither
+  app's LocalCache has a `delivery` folder. Hook writes into that existing real folder stay
+  real. A new top-level folder does not: a probe folder created from a Claude agent shell
+  landed in the Claude LocalCache, while the same write run through a scheduled task landed
+  in the real `%LOCALAPPDATA%`.
+
+Had the hook won that race, the only server would have lived in the Claude app. It would
+have died with the next update and restarted inside whichever app opened the next session.
+
+**Fix.** `Start-AgentMail.ps1` no longer launches the server itself. It runs the task
+(`Start-ScheduledTask`), which Task Scheduler starts outside every app.
+`MultipleInstances IgnoreNew` folds concurrent requests into the run in progress.
+`Register-AgentMailTask.ps1` runs the task at registration, so the real
+`%LOCALAPPDATA%\mcp-agent-mail` exists before any hook runs. Otherwise, on a fresh machine,
+the first hook's `mkdir` would give Claude and Codex separate private delivery-state
+folders. The script refuses a task whose action lacks `-FromTask`: re-run
+`Register-AgentMailTask.ps1` once on every machine after pulling this change. Explorer, the
+route `Start-DockerDesktop.ps1` uses, was not chosen. It cannot pass `serve --no-tui`,
+redirect the logs, or hide the console, and the task already existed.
+
+**Leftover:** `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Local\mcp-agent-mail\`
+holds only the dead duplicate's logs. Removing it ends the shadowing; this awaits the
+owner's approval.
 
 ## Shared delivery hooks
 
@@ -44,7 +100,7 @@ in `%LOCALAPPDATA%\mcp-agent-mail\delivery\`; nothing is written into applicatio
 
 | Event | Behavior |
 |---|---|
-| `SessionStart` | Self-heal the server, bind a new session to its own server-assigned identity, announce the identity and check mail. Resumes keep the binding. |
+| `SessionStart` | Self-heal the server through the scheduled task, bind a new session to its own server-assigned identity, announce the identity and check mail (also after a failed start). Resumes keep the binding. |
 | `UserPromptSubmit` | Check for new mail, including existing sessions whose startup hook was missed. |
 | `PostToolUse` | Check mail while the agent works, at most once per five seconds per session. |
 | `Stop` | Deliver new pending mail before finishing; permit at most one forced continuation. |
@@ -138,8 +194,9 @@ data directory survives; `am doctor check` afterwards.
 
 ## Second machine (vg-home)
 
-Same steps, same paths: install the binaries, run `Register-AgentMailTask.ps1`, `claude mcp add`
-and `codex mcp add` as above, copy the hook entry into `~\.claude\settings.json`. The workspace
+Same steps, same paths: install the binaries, run `Register-AgentMailTask.ps1` (it starts the
+server) before any hook is installed, then `claude mcp add` and `codex mcp add` as above,
+and copy the hook entry into `~\.claude\settings.json`. The workspace
 files arrive with `unwip-all`; run `install-delivery.mjs --apply` and review Codex hook trust
 there too. Mailboxes and session bindings are per machine — they are not synced.
 
@@ -175,7 +232,8 @@ before repeating the installation at home.
 1. On the receiving home PC run `unwip-all` (workspace root first, missing repos cloned,
    then the remaining repos). Do not replace this with a single-repo pull for a workspace sync.
 2. Install the verified Agent Mail release and loopback-only server config under the home
-   user's paths. Register its at-logon task with `Register-AgentMailTask.ps1` and verify health.
+   user's paths. Register its at-logon task with `Register-AgentMailTask.ps1` (it starts the
+   server outside every app) and verify health, before step 3 installs any hook.
 3. Add the MCP endpoint to both home harnesses using the commands above, then run
    `install-delivery.mjs --apply` locally. It resolves home-user settings paths automatically.
 4. Review/trust the four new Codex hooks and reload the harnesses. Register distinct home

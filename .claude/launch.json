@@ -6,6 +6,12 @@
 			"runtimeExecutable": "npm",
 			"runtimeArgs": ["run", "dev", "--prefix", "PM"],
 			"port": 3200
+		},
+		{
+			"name": "pm-hd-form-agent",
+			"runtimeExecutable": "npm",
+			"runtimeArgs": ["run", "dev:agent", "--prefix", "PM/.claude/worktrees/hd-form"],
+			"port": 3209
 		}
 	]
 }

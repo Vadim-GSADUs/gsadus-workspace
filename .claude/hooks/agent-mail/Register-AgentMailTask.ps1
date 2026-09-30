@@ -5,9 +5,13 @@
 
 .DESCRIPTION
     Action:  pwsh -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass
-             -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1 -Quiet
-    Trigger: at logon of the current user (30 s delay so the network stack is up).
+             -File C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1 -FromTask -Quiet
+    Trigger: at logon of the current user (30 s delay so the network stack is up), and on
+             demand: Start-AgentMail.ps1 runs this task instead of launching the server itself,
+             so the server always starts outside the Claude/Codex app containers (README.md).
     Runs interactively as the current user, limited privileges, no stored password.
+    Registering also runs the task once, so the server and the real
+    %LOCALAPPDATA%\mcp-agent-mail folder exist before any agent hook can create them in an app.
 
     Usage:   pwsh -File C:\GSADUs\.claude\hooks\agent-mail\Register-AgentMailTask.ps1 [-Unregister]
     Check:   Get-ScheduledTask -TaskPath \GSADUs\ -TaskName mcp-agent-mail | Get-ScheduledTaskInfo
@@ -27,7 +31,7 @@ if ($Unregister) {
 }
 
 $pwsh = (Get-Command pwsh.exe -ErrorAction Stop).Source
-$action  = New-ScheduledTaskAction -Execute $pwsh -Argument "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$script`" -Quiet"
+$action  = New-ScheduledTaskAction -Execute $pwsh -Argument "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$script`" -FromTask -Quiet"
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $trigger.Delay = 'PT30S'
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable `
@@ -38,4 +42,6 @@ Register-ScheduledTask -TaskPath $taskPath -TaskName $taskName -Action $action -
     -Settings $settings -Principal $principal -Force `
     -Description 'Starts the MCP Agent Mail server (mcp-agent-mail serve --no-tui on 127.0.0.1:8765) so Claude Code and Codex sessions can message each other. Script: C:\GSADUs\.claude\hooks\agent-mail\Start-AgentMail.ps1' | Out-Null
 
+# A no-op when the server already listens.
+Start-ScheduledTask -TaskPath $taskPath -TaskName $taskName
 Get-ScheduledTask -TaskPath $taskPath -TaskName $taskName | Select-Object TaskPath, TaskName, State
