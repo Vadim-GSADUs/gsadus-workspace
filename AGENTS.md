@@ -84,17 +84,10 @@ agents, and the migration record: `Vault\wiki\curated\secrets-management.md`.
 ## Production Error Triage — Sentry (one org, every project)
 
 One Sentry org (`gsadus`) holds every app project (`webapp`, `pm`, …). Read it from ANY repo
-with the workspace probe — GET-only by construction, compact output, no MCP round-trips:
-
-```powershell
-sentry-probe issues --project pm                        # pwsh (shell-profile function)
-node C:/GSADUs/Tools/Sentry/sentry-probe.mjs issue PM-10   # Git Bash / any shell
-```
-
-Commands: `projects` · `issues` · `issue <SHORT_ID>` · `events`; `--json` for the raw payload.
-Auth is `SENTRY_AUTH_TOKEN`, read from Doppler `webapp/dev` at call time (never print it).
-Reach for a Sentry MCP connector (claude.ai's, or one wired into the harness you are in) only for what the probe cannot do (Seer, updates).
-Details: `Tools\Sentry\README.md`.
+with the GET-only workspace probe: `sentry-probe issues --project pm` (pwsh), or
+`node C:/GSADUs/Tools/Sentry/sentry-probe.mjs …` from any shell. Reach for a Sentry MCP
+connector only for what the probe cannot do (Seer, updates). Commands, auth and the token's
+Doppler home (never print it): `Tools\Sentry\README.md`.
 
 ## Deployment readiness — WebApp and PM
 
@@ -109,6 +102,7 @@ A push of `main` in WebApp or PM is watched automatically: a user-level Claude C
 5. **Do not commit `*.addin` files to this workspace repo.** They belong in the `deploy\` folder of each Revit addin repo.
 6. **Fix the root cause; never fall back to a legacy path or leave stale code behind.** When patching or fixing, address the actual error at its source. Do **not** reach for a superseded/legacy method as a quick workaround, and do **not** leave the old or duplicate code path behind "just in case" — remove or migrate superseded code as part of the same change. Stacked fallbacks and orphaned code snowball, get silently ignored, and make every later edit harder to reason about. A genuine fallback must be a deliberate, documented design decision (and the superseded path retired on a stated timeline), never a reflex. This applies to every repo in this workspace.
 7. **Plans expire — deprecate aged plans instead of reviving them.** If a planning doc (a `planning.md`, `.planning/` artifact, roadmap, or spec) has sat untouched and unimplemented for **3–4 months**, mark it deprecated rather than executing or patching it — by then the projects have almost always evolved past what the plan describes. Recreate a fresh plan from current codebase context instead of trying to rehabilitate an aged one (decision 2026-07-10). This applies to every repo in this workspace and to the Vault's planning pages.
+8. **Supabase egress is one shared Free-plan budget — count before you read.** Every repo (production, local dev and e2e alike) spends the same 5 GB/cycle of `gsadus-web-catalog` egress through one pooler, and an overage after the grace period (ends 2026-10-29) restricts the project with no further warning. Before adding a read, a short cache, polling, or a test loop against the live DB, count calls × rows × bytes per cycle; re-read unchanged rows only through a fingerprint. Guard: `egress-probe check` (`Tools\Supabase\egress-probe.mjs`; exit 2 = over the limit), and bracket heavy test loops with it; never run `pg_stat_statements_reset()`. Method, budget math and each repo's guard: `Vault\wiki\curated\supabase-egress-budget.md` (owner 2026-09-29).
 
 ## Agent Harnesses — one instruction set (owner decision 2026-09-05)
 
