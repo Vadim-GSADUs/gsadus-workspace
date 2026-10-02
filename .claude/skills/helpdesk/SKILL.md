@@ -83,7 +83,7 @@ For each `new` or `reopened` ticket:
 
 - `helpdesk approve <n> --to claude|codex|owner [--note …]`: the owner picks who works it.
 - `helpdesk reject <n> --reason "…"`.
-- (Planned, step 7c: the owner decides with Approve/Reject buttons on cards in their own chat
+- (Planned, step 7d: the owner decides with Approve/Reject buttons on cards in their own chat
   with the bot, and these two commands retire. Until it ships, use the commands.)
 - **Filing on someone's behalf** (`helpdesk file`) is for the owner's request only, such as an
   idea raised in another Chat space. Add `--chat-user users/<id>` (from one of the person's
