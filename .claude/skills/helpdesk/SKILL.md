@@ -32,7 +32,9 @@ node C:/GSADUs/Helpdesk/bin/helpdesk.ts list         # any shell (Git Bash, Code
 5. **Screenshots may show client names, addresses or deal values.** Read them to understand
    the ticket; never paste them into commits, PRs, Chat or anywhere outside this machine.
 6. **The ticket's Chat thread is a conversation.** Each ticket has its own thread in the
-   reporter's chat with the GSADUs staff bot (HD-1 to HD-3: in the retired Tech Requests space).
+   reporter's chat with the GSADUs staff bot (HD-1 to HD-3: in the retired Tech Requests space),
+   and one in each requester's: staff who said Me too to an idea. Every visible change reaches
+   all of them, and `resolve` adds a review card (Looks good / Needs changes) to each.
    - The command posts every visible change to the thread as the GSADUs staff bot: the `ask`
      question and the `resolve` resolution go out word for word (the owner's reject reason too,
      from their card). Write
