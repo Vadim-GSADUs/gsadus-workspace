@@ -1,13 +1,13 @@
 ---
 name: helpdesk
-description: Read, triage and work GSADUs staff helpdesk tickets (HD-n) — bugs, confusing UI, ideas and access requests staff file about WebApp, PM or IT — with the `helpdesk` command, owner approval, one-session claims, worktree fixes and QUEUE.md parking. Use when the user mentions the helpdesk, a ticket or HD-number, staff feedback or bug reports, or asks to triage, approve, claim, fix or close tickets.
+description: Read, triage and work GSADUs staff helpdesk tickets (HD-n) — bugs, confusing UI, ideas and access requests staff file about WebApp, PM or IT — with the `helpdesk` command, owner decisions in Chat, one-session claims, worktree fixes and QUEUE.md parking. Use when the user mentions the helpdesk, a ticket or HD-number, staff feedback or bug reports, or asks to triage, claim, fix or close tickets, or about the owner's approvals.
 ---
 
 # helpdesk — staff tickets, worked by agents
 
 Staff file tickets in the GSADUs staff Chat app (`/ticket`, or by telling the bot what's
 wrong) and talk in each ticket's thread, in their own chat with the bot; agent sessions triage
-and fix them; the owner approves.
+and fix them; the owner decides on a card in their own chat with the bot.
 Spec and owner decisions: Vault `wiki/curated/helpdesk.md`. The command and the Chat app's
 service live in the `gsadus-helpdesk` repo; reference: `C:\GSADUs\Helpdesk\README.md`
 (`helpdesk help` lists every command).
@@ -26,16 +26,16 @@ node C:/GSADUs/Helpdesk/bin/helpdesk.ts list         # any shell (Git Bash, Code
 3. **Identify yourself on every change:** `--as claude:<YourAgentMailName>` or
    `--as codex:<YourAgentMailName>`. The command appends `@<machine>`. Use `--as owner` only
    to relay an owner instruction word for word, such as "send it back".
-4. **Approve and reject belong to the owner.** Run them only when the owner says so in this
-   conversation. They open a confirmation window on the owner's desktop. Tell the owner to
-   click it, and run the command with a tool timeout of at least 5 minutes. Never automate
-   that window. Never change tickets with SQL or any other route around the command.
+4. **Approve and reject belong to the owner, on their decision card in Chat.** The command
+   cannot approve or reject; no session does. Never change tickets with SQL, the service's
+   credentials or any other route around the command, and never click the owner's card.
 5. **Screenshots may show client names, addresses or deal values.** Read them to understand
    the ticket; never paste them into commits, PRs, Chat or anywhere outside this machine.
 6. **The ticket's Chat thread is a conversation.** Each ticket has its own thread in the
    reporter's chat with the GSADUs staff bot (HD-1 to HD-3: in the retired Tech Requests space).
    - The command posts every visible change to the thread as the GSADUs staff bot: the `ask`
-     question, the `reject` reason and the `resolve` resolution go out word for word. Write
+     question and the `resolve` resolution go out word for word (the owner's reject reason too,
+     from their card). Write
      those for the reporter, in plain language, with no file paths, code or client details.
      Triage notes, fix summaries and `comment` stay in the history.
    - To tell the reporter something, use `helpdesk reply <n> --as … "<text>"`; never post as the
@@ -81,10 +81,14 @@ For each `new` or `reopened` ticket:
 
 ## Owner decisions
 
-- `helpdesk approve <n> --to claude|codex|owner [--note …]`: the owner picks who works it.
-- `helpdesk reject <n> --reason "…"`.
-- (Planned, step 7d: the owner decides with Approve/Reject buttons on cards in their own chat
-  with the bot, and these two commands retire. Until it ships, use the commands.)
+- **The owner's decision card.** `file` and `triage` put a card for the ticket in the owner's
+  own chat with the bot, with your triage note as its plan: Approve for Claude, Codex or the
+  owner; Reject, with a reason the reporter sees; Reply. Only the owner's Google account can
+  use it, and the reporter is told in the ticket's thread. So write the triage note as the plan
+  the owner approves. Exit code 3 after `file` or `triage` can also mean the card did not post:
+  tell the owner.
+- After triage, tell the owner the card is waiting; never ask them to approve in this
+  conversation instead. An approved ticket shows as `approved` with its assignee in `list`.
 - **Filing on someone's behalf** (`helpdesk file`) is for the owner's request only, such as an
   idea raised in another Chat space. Add `--chat-user users/<id>` (from one of the person's
   earlier tickets, `show --json`) so its thread opens in their chat with the bot; without it the
@@ -115,8 +119,8 @@ For each `new` or `reopened` ticket:
    For products with no deploy, resolve after the merge.
 7. Stuck or out of scope: `helpdesk release <n> --as … --note "…"` gives it back to `approved`.
 
-**Delegating across harnesses.** When the owner approves a ticket `--to codex` from a Claude
-session, the Claude session may launch Codex (`codex exec`, openai-codex plugin) with a brief
+**Delegating across harnesses.** When the owner approves a ticket for Codex and asks a Claude
+session to start it, the Claude session may launch Codex (`codex exec`, openai-codex plugin) with a brief
 built from `helpdesk show <n>`. Codex claims it as `codex:<name>`. The reverse direction uses
 the `delegate-to-claude` skill. The launching session reviews the diff before it lands.
 
