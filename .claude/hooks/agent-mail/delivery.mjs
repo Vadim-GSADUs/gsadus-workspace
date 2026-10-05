@@ -173,10 +173,14 @@ async function main() {
   try {
     const input = JSON.parse(raw);
     if (input.hook_event_name === 'SessionStart' && input.cwd && inWorkspace(input.cwd)) {
-      // Preserve the original startup self-heal; normal tool hooks never start services.
-      execFileSync('pwsh', ['-NoProfile', '-NonInteractive', '-File',
-        path.join(path.dirname(fileURLToPath(import.meta.url)), 'Start-AgentMail.ps1'), '-Quiet'],
-      { timeout: 10000, windowsHide: true, stdio: 'ignore' });
+      // Startup self-heal only; normal tool hooks never start services. The script runs the
+      // scheduled task, so the server never becomes a child of this app (README: App containers).
+      // A slow or failed start must not skip this session's mail check.
+      try {
+        execFileSync('pwsh', ['-NoProfile', '-NonInteractive', '-File',
+          path.join(path.dirname(fileURLToPath(import.meta.url)), 'Start-AgentMail.ps1'), '-Quiet'],
+        { timeout: 10000, windowsHide: true, stdio: 'ignore' });
+      } catch {}
     }
     console.log(JSON.stringify(await runHook(input, program)));
   } catch {
