@@ -170,8 +170,11 @@ is not enabled. File leases remain **advisory**. The worktree-per-agent rule sti
 All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions.
 
 Key vault pages:
+- `Vault\Board.md` — **the board** (owner 2026-10-05): the one global view of planned work, a
+  note per thread in `Vault\board\threads\` that links to repo docs, never copies them. Only
+  the owner opens a thread; the session working one updates it at `/handoff`. Rules:
+  `Vault\AGENTS.md` → Board. Session-start hook: `node .claude\hooks\board\install.mjs --apply`.
 - `Vault\wiki\curated\key-locations.md` — all file paths and machine hostnames
-- `Vault\wiki\curated\planning.md` — gaps, roadmap, automation candidates
 - `Vault\wiki\auto\pipeline-image-export.md` — end-to-end image pipeline
 - `Vault\wiki\curated\wip-sync.md` — cross-PC sync workflow
 
