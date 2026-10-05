@@ -27,3 +27,6 @@ profile.ps1
 # Workspace .claude/ IS tracked (hooks, skills, settings.json sync via git);
 # only the machine-local allowlist stays per-machine
 .claude/settings.local.json
+
+# Agent worktrees (Claude Code, Codex): local checkouts, never committed
+.claude/worktrees/
