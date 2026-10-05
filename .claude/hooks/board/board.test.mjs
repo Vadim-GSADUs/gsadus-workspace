@@ -41,7 +41,7 @@ test('summary lists Now by rank, open asks, and an overdue review', () => {
   assert.equal(lines[2], '- PM · b — next: b next');
   assert.equal(lines[3], '- WebApp · a (this repo) — next: ship the switch');
   assert.ok(out.includes('- WebApp · a (this repo): decide · the cutover date'));
-  assert.ok(out.includes('- Tools · parked: live · check'));
+  assert.ok(!out.includes('live · check'), 'a parked thread\'s asks wait for the weekly review');
   assert.ok(!out.includes('old'));
   assert.ok(out.includes('Board review due: last reviewed 2026-09-20.'));
 });

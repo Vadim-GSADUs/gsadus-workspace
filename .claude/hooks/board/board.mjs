@@ -56,7 +56,9 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
   const mark = (t) => (project && t.project === project ? ' (this repo)' : '');
   const now = open.filter((t) => t.state === 'now')
     .sort((a, b) => (Number(a.rank) || 99) - (Number(b.rank) || 99) || a.name.localeCompare(b.name));
-  const asks = open.flatMap((t) => items(t.asks).map((a) => `- ${t.name}${mark(t)}: ${clip(a, 140)}`));
+  // Parked threads keep their asks for the weekly review; only Now and Next ones wait on the owner.
+  const asks = open.filter((t) => t.state === 'now' || t.state === 'next')
+    .flatMap((t) => items(t.asks).map((a) => `- ${t.name}${mark(t)}: ${clip(a, 140)}`));
   const lines = [];
   if (now.length) {
     lines.push('Now:');
