@@ -1,11 +1,11 @@
 #Requires -Version 7
 <#
-claude-run.ps1 — launch a pinned, non-interactive Claude Code session from any harness.
+claude-run.ps1 — launch a non-interactive Claude Code session from any harness.
 
 Companion to ..\SKILL.md (delegate-to-claude). Same pattern as Tools\ShellProfile\profile.ps1
-Invoke-WipConflictAgent and Vault\scripts\wiki-scan.ps1 — the owner's rule for scripted
-launches (2026-07-14): pin the model, pre-grant scoped permissions, never inherit account
-defaults.
+Invoke-WipConflictAgent and Vault\scripts\wiki-scan.ps1 — the owner's rules for scripted
+launches: pre-grant scoped permissions (2026-07-14) and run the account's default model, with
+no --model pin (2026-09-30). -Model overrides the model for one launch.
 
   claude-run.ps1 -Repo C:\GSADUs\PM -BriefFile brief.md
   claude-run.ps1 -Repo C:\GSADUs\WebApp -Brief "Review lib/estimator/calculate.ts for …" -AllowedTools Read,Glob,Grep
@@ -17,7 +17,7 @@ param(
     [Parameter(Mandatory)][string]$Repo,
     [string]$Brief,
     [string]$BriefFile,
-    [string]$Model = 'claude-fable-5-1',
+    [string]$Model,
     [string]$Effort = 'high',
     [string]$PermissionMode = 'acceptEdits',
     [string[]]$AllowedTools = @('Read', 'Glob', 'Grep', 'Edit', 'Write', 'Bash(git:*)', 'Bash(npm:*)', 'Bash(node:*)', 'Bash(pwsh:*)', 'PowerShell(git:*)'),
@@ -41,7 +41,6 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) { Write-Error "'cla
 
 $claudeArgs = @(
     '-p', $Brief
-    '--model', $Model
     '--effort', $Effort
     '--permission-mode', $PermissionMode
     '--allowedTools'
@@ -51,6 +50,7 @@ $claudeArgs = @(
     '--setting-sources', 'user,project,local'
     '--output-format', $OutputFormat
 )
+if ($Model) { $claudeArgs += @('--model', $Model) }
 if ($Name) { $claudeArgs += @('--name', $Name) }
 foreach ($d in $AddDir) { $claudeArgs += @('--add-dir', $d) }
 
