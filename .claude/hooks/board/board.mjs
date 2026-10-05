@@ -33,10 +33,31 @@ export function frontmatter(text) {
   return out;
 }
 
-export function readThreads(dir = path.join(VAULT, 'board', 'threads')) {
+// Board.md is an Obsidian Kanban board: a lane per state (## Now, ## Next, ## Parked, ## Done) and
+// a card per thread (`- [ ] [[<thread>]]`); a card's place in its lane is the thread's rank.
+export function lanes(text) {
+  const out = new Map();
+  let state = null;
+  let rank = 0;
+  for (const line of text.split(/\r?\n/)) {
+    const lane = /^##\s+(.+?)\s*$/.exec(line);
+    if (lane) { state = lane[1].toLowerCase(); rank = 0; continue; }
+    const card = state && /^- \[[ xX]\]\s+.*?\[\[([^\]|#]+)/.exec(line);
+    if (card && !out.has(card[1].trim())) out.set(card[1].trim(), { state, rank: ++rank });
+  }
+  return out;
+}
+
+// Thread notes joined with their place on the board; a note without a card has no state.
+export function readThreads(dir = path.join(VAULT, 'board', 'threads'), board = path.join(VAULT, 'Board.md')) {
   let names;
   try { names = fs.readdirSync(dir).filter((n) => n.endsWith('.md')); } catch { return []; }
-  return names.map((n) => ({ ...frontmatter(fs.readFileSync(path.join(dir, n), 'utf8')), name: n.slice(0, -3) }));
+  let placed = new Map();
+  try { placed = lanes(fs.readFileSync(board, 'utf8')); } catch { /* no board yet */ }
+  return names.map((n) => {
+    const name = n.slice(0, -3);
+    return { ...frontmatter(fs.readFileSync(path.join(dir, n), 'utf8')), ...placed.get(name), name };
+  });
 }
 
 // The owner's last weekly review: the latest Vault commit titled `board: weekly review` (the

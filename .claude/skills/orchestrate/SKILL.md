@@ -6,11 +6,12 @@ description: Act as the owner's orchestrator for the GSADUs board — take the o
 # orchestrate — the board's books, not the work
 
 The owner talks to one pinned session at `C:\GSADUs`. It keeps the board and routes work to
-specialist sessions; it never implements. It edits only thread notes, never `Board.md` (read-only
-views) or repo code (owner decision 2026-10-05).
+specialist sessions; it never implements. It edits only `Board.md` and the thread notes, never
+repo code (owner decision 2026-10-05).
 
-- **Board:** `Vault\Board.md`; one note per thread in `Vault\board\threads\`; the schema and
-  rules are in `Vault\AGENTS.md` → Board.
+- **Board:** `Vault\Board.md`, a Kanban board: the lane is a thread's state, the card's place
+  its rank. One note per thread in `Vault\board\threads\`. Schema and rules: `Vault\AGENTS.md`
+  → Board.
 - **Activity:** `Vault\wiki\auto\activity.md`, written by the vault scan: commits per repo,
   quiet threads, threads whose sources changed after `touched`.
 - **Sessions:** the desktop session tools list, read, message, rename and archive Code tab
@@ -29,10 +30,11 @@ views) or repo code (owner decision 2026-10-05).
 
 | Message | Do |
 |---|---|
-| News about a thread | Update its note: `state`, `next`, `blocker`, `asks`, `touched` |
-| A new piece of work | Propose a thread (rule 1); on yes, write the note with `planned_in` set to the session where the owner shaped it |
+| News about a thread | Update its note (`next`, `blocker`, `asks`, `touched`); move its card if the state changed |
+| A new piece of work | Propose a thread (rule 1); on yes, write the note with `planned_in` set to the session where the owner shaped it, and add its card where the owner says |
+| An order change ("put X above Y") | Move the cards; ranks are the owner's alone |
 | An answer to an ask | Remove the ask, send the answer to the thread's worker |
-| An idea | On yes, a `parked` thread; otherwise `Vault\wiki\curated\big-ideas.md` |
+| An idea | On yes, a Parked card and note; otherwise `Vault\wiki\curated\big-ideas.md` |
 
 ## Routing
 
@@ -53,7 +55,7 @@ review due.
 
 ## Weekly review (15 minutes, with the owner)
 
-Walk Now, then Next, then Parked: re-rank, set finished threads to `done`, park what has
+Walk Now, then Next, then Parked: reorder cards, move finished ones to Done, park what has
 stalled, deprecate plans older than three months (workspace rule 7). Suggest archiving
 the sessions of `done` threads; each archive waits for the owner's yes. Commit the review as
 `board: weekly review` (`--allow-empty` when nothing changed); the hook dates the next one from it.

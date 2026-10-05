@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { frontmatter, lastReview, projectOf, summary } from './board.mjs';
+import { frontmatter, lanes, lastReview, projectOf, summary } from './board.mjs';
 import { mergeHook } from './install.mjs';
 
 const note = [
@@ -22,6 +22,19 @@ test('frontmatter reads scalars, quoted values, lists and empty keys', () => {
   assert.deepEqual(fm.sources, ['repo: ../WebApp/docs/HANDOFF.md']);
   assert.deepEqual(frontmatter('no frontmatter'), {});
   assert.deepEqual(frontmatter('---\nasks: []\n---\n').asks, []);
+});
+
+test('lanes reads state and rank from the Kanban board', () => {
+  const board = [
+    '---', '', 'kanban-plugin: board', '', '---', '', '## Now', '', '- [ ] [[WebApp · a]]', '- [ ] [[PM · b]]', '',
+    '## Parked', '', '- [ ] [[Tools · c]]', '- [ ] [[big-ideas|Big ideas]] · [PM](file:///x)', '',
+    '## Done', '', '**Complete**', '- [x] [[PM · d]]', '', '%% kanban:settings', '```', '{"kanban-plugin":"board"}', '```', '%%',
+  ].join('\r\n');
+  const placed = lanes(board);
+  assert.deepEqual(placed.get('PM · b'), { state: 'now', rank: 2 });
+  assert.deepEqual(placed.get('Tools · c'), { state: 'parked', rank: 1 });
+  assert.deepEqual(placed.get('PM · d'), { state: 'done', rank: 1 });
+  assert.equal(placed.size, 5, 'a non-thread card is read but never matches a note');
 });
 
 test('projectOf names the repo a session runs in', () => {
