@@ -1,7 +1,11 @@
 // node --test C:\GSADUs\.claude\hooks\board\board.test.mjs
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
-import { frontmatter, projectOf, summary } from './board.mjs';
+import { frontmatter, lastReview, projectOf, summary } from './board.mjs';
 import { mergeHook } from './install.mjs';
 
 const note = [
@@ -48,6 +52,20 @@ test('summary lists Now by rank, open asks, and an overdue review', () => {
 
 test('summary is silent when nothing is open and the review is fresh', () => {
   assert.equal(summary([], { reviewed: '2026-10-05', today: new Date('2026-10-06T09:00:00') }), '');
+});
+
+test('lastReview dates the latest weekly-review commit', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'board-'));
+  const git = (args, date) => execFileSync('git', ['-C', dir, '-c', 'user.name=t', '-c', 'user.email=t@t', ...args],
+    { stdio: 'ignore', env: date ? { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } : process.env });
+  try {
+    git(['init', '-q']);
+    assert.equal(lastReview(dir), '');
+    git(['commit', '-q', '--allow-empty', '-m', 'board: weekly review'], '2026-09-28T10:00:00');
+    git(['commit', '-q', '--allow-empty', '-m', 'board: PM · b — next step'], '2026-10-01T10:00:00');
+    assert.equal(lastReview(dir), '2026-09-28');
+    assert.equal(lastReview(path.join(dir, 'missing')), '');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test('mergeHook replaces only its own handler', () => {

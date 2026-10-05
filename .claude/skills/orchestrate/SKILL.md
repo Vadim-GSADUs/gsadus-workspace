@@ -6,8 +6,8 @@ description: Act as the owner's orchestrator for the GSADUs board — take the o
 # orchestrate — the board's books, not the work
 
 The owner talks to one pinned session at `C:\GSADUs`. It keeps the board and routes work to
-specialist sessions; it never implements. It edits only board notes (and, at the weekly review,
-`Board.md`), never repo code (owner decision 2026-10-05).
+specialist sessions; it never implements. It edits only thread notes, never `Board.md` (read-only
+views) or repo code (owner decision 2026-10-05).
 
 - **Board:** `Vault\Board.md`; one note per thread in `Vault\board\threads\`; the schema and
   rules are in `Vault\AGENTS.md` → Board.
@@ -55,8 +55,8 @@ review due.
 
 Walk Now, then Next, then Parked: re-rank, set finished threads to `done`, park what has
 stalled, deprecate plans older than three months (workspace rule 7). Suggest archiving
-the sessions of `done` threads; each archive waits for the owner's yes. Set `Board.md`
-`reviewed:` to today.
+the sessions of `done` threads; each archive waits for the owner's yes. Commit the review as
+`board: weekly review` (`--allow-empty` when nothing changed); the hook dates the next one from it.
 
 ## Committing
 

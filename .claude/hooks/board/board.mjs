@@ -4,6 +4,7 @@
 // dependencies. Silent outside the workspace and when nothing is open; never blocks a session.
 //   node board.mjs hook   # SessionStart: reads the hook JSON on stdin, prints hook JSON
 //   node board.mjs        # the same lines, for a person
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,6 +37,15 @@ export function readThreads(dir = path.join(VAULT, 'board', 'threads')) {
   let names;
   try { names = fs.readdirSync(dir).filter((n) => n.endsWith('.md')); } catch { return []; }
   return names.map((n) => ({ ...frontmatter(fs.readFileSync(path.join(dir, n), 'utf8')), name: n.slice(0, -3) }));
+}
+
+// The owner's last weekly review: the latest Vault commit titled `board: weekly review` (the
+// orchestrate skill makes it, empty when nothing changed). '' when there is none.
+export function lastReview(vault = VAULT) {
+  try {
+    return execFileSync('git', ['-C', vault, 'log', '-1', '--format=%cs', '--grep=^board: weekly review'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5000 }).trim();
+  } catch { return ''; }
 }
 
 const text = (v) => (Array.isArray(v) ? '' : String(v ?? '').trim());
@@ -84,8 +94,7 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
 function render(cwd) {
   const project = projectOf(cwd);
   if (!project) return '';
-  const reviewed = text(frontmatter(fs.readFileSync(path.join(VAULT, 'Board.md'), 'utf8')).reviewed);
-  return summary(readThreads(), { reviewed, project });
+  return summary(readThreads(), { reviewed: lastReview(), project });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
