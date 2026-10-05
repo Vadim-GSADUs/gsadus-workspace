@@ -39,6 +39,7 @@ test('summary lists Now by rank, open asks, and an overdue review', () => {
     { name: 'WebApp · a', ...frontmatter(note) },
     { name: 'WebApp · done', project: 'WebApp', state: 'done', asks: ['decide · old'] },
     { name: 'Tools · parked', project: 'Tools', state: 'parked', asks: ['live · check'] },
+    { name: 'PM · c', project: 'PM', state: 'next', rank: '1', asks: ['admin · console step'] },
   ];
   const out = summary(threads, { reviewed: '2026-09-20', project: 'WebApp', today: new Date('2026-10-05T12:00:00') });
   const lines = out.split('\n');
@@ -47,7 +48,12 @@ test('summary lists Now by rank, open asks, and an overdue review', () => {
   assert.ok(out.includes('- WebApp · a (this repo): decide · the cutover date'));
   assert.ok(!out.includes('live · check'), 'a parked thread\'s asks wait for the weekly review');
   assert.ok(!out.includes('old'));
+  assert.ok(!out.includes('console step'), 'another repo\'s asks are only counted');
+  assert.ok(out.includes('Also waiting on the owner: 1 ask on other repos\' threads (Board.md).'));
   assert.ok(out.includes('Board review due: last reviewed 2026-09-20.'));
+  const root = summary(threads, { reviewed: '2026-10-05', project: 'Workspace', today: new Date('2026-10-05T12:00:00') });
+  assert.ok(root.indexOf('WebApp · a: decide') < root.indexOf('PM · c: admin'), 'the root sees every ask, Now first');
+  assert.ok(!root.includes('Also waiting'));
 });
 
 test('summary is silent when nothing is open and the review is fresh', () => {

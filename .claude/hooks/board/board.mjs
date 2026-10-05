@@ -67,8 +67,14 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
   const now = open.filter((t) => t.state === 'now')
     .sort((a, b) => (Number(a.rank) || 99) - (Number(b.rank) || 99) || a.name.localeCompare(b.name));
   // Parked threads keep their asks for the weekly review; only Now and Next ones wait on the owner.
-  const asks = open.filter((t) => t.state === 'now' || t.state === 'next')
+  // A repo session gets its own repo's asks and a count of the rest; the workspace root gets all.
+  const asking = open.filter((t) => t.state === 'now' || t.state === 'next')
+    .sort((a, b) => (a.state === 'now' ? 0 : 1) - (b.state === 'now' ? 0 : 1)
+      || (Number(a.rank) || 99) - (Number(b.rank) || 99) || a.name.localeCompare(b.name));
+  const shown = (t) => !project || project === 'Workspace' || t.project === project;
+  const asks = asking.filter(shown)
     .flatMap((t) => items(t.asks).map((a) => `- ${t.name}${mark(t)}: ${clip(a, 140)}`));
+  const elsewhere = asking.filter((t) => !shown(t)).reduce((n, t) => n + items(t.asks).length, 0);
   const lines = [];
   if (now.length) {
     lines.push('Now:');
@@ -79,6 +85,7 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
     }
   }
   if (asks.length) lines.push('Waiting on the owner:', ...asks);
+  if (elsewhere) lines.push(`Also waiting on the owner: ${elsewhere} ask${elsewhere === 1 ? '' : 's'} on other repos' threads (Board.md).`);
   const days = reviewed ? Math.floor((today - new Date(`${reviewed}T00:00:00`)) / 86400000) : NaN;
   const due = Number.isFinite(days) && days > REVIEW_DAYS;
   if (!lines.length && !due) return '';
