@@ -30,8 +30,8 @@ repo code (owner decision 2026-10-05).
 
 | Message | Do |
 |---|---|
-| News about a thread | Update its note (`next`, `blocker`, `asks`, `touched`); move its card if the state changed |
-| A new piece of work | Propose a thread (rule 1); on yes, write the note with `planned_in` set to the session where the owner shaped it, and add its card where the owner says |
+| News about a thread | Update its note (`next`, `blocker`, `asks`, `touched`; `intent` only if the purpose changed); move its card if the state changed |
+| A new piece of work | Propose a thread (rule 1); on yes, write the note, its `intent` in plain English and `planned_in` set to the session where the owner shaped it, and add its card where the owner says |
 | An order change ("put X above Y") | Move the cards; ranks are the owner's alone |
 | An answer to an ask | Remove the ask, send the answer to the thread's worker |
 | An idea | On yes, a Parked card and note; otherwise `Vault\wiki\curated\big-ideas.md` |

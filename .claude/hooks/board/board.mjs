@@ -100,9 +100,10 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
   if (now.length) {
     lines.push('Now:');
     for (const t of now) {
-      const next = text(t.next) && ` — next: ${clip(text(t.next), 110)}`;
+      const intent = text(t.intent) && `: ${clip(text(t.intent), 100)}`;
+      const next = text(t.next) && ` — next: ${clip(text(t.next), 90)}`;
       const blocked = text(t.blocker) && ` — blocked: ${clip(text(t.blocker), 80)}`;
-      lines.push(`- ${t.name}${mark(t)}${next}${blocked}`);
+      lines.push(`- ${t.name}${mark(t)}${intent}${next}${blocked}`);
     }
   }
   if (asks.length) lines.push('Waiting on the owner:', ...asks);

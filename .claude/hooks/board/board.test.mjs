@@ -9,7 +9,7 @@ import { frontmatter, lanes, lastReview, projectOf, summary } from './board.mjs'
 import { mergeHook } from './install.mjs';
 
 const note = [
-  '---', 'project: WebApp', 'state: now', 'rank: 2', 'next: "ship the switch"', 'blocker:',
+  '---', 'project: WebApp', 'intent: "Move the site off WordPress"', 'state: now', 'rank: 2', 'next: "ship the switch"', 'blocker:',
   'asks:', '  - "decide · the cutover date"', '  - admin · rotate the key', 'sources:',
   '  - repo: ../WebApp/docs/HANDOFF.md', 'touched: 2026-10-05', '---', 'body',
 ].join('\r\n');
@@ -57,7 +57,7 @@ test('summary lists Now by rank, open asks, and an overdue review', () => {
   const out = summary(threads, { reviewed: '2026-09-20', project: 'WebApp', today: new Date('2026-10-05T12:00:00') });
   const lines = out.split('\n');
   assert.equal(lines[2], '- PM · b — next: b next');
-  assert.equal(lines[3], '- WebApp · a (this repo) — next: ship the switch');
+  assert.equal(lines[3], '- WebApp · a (this repo): Move the site off WordPress — next: ship the switch');
   assert.ok(out.includes('- WebApp · a (this repo): decide · the cutover date'));
   assert.ok(!out.includes('live · check'), 'a parked thread\'s asks wait for the weekly review');
   assert.ok(!out.includes('old'));
