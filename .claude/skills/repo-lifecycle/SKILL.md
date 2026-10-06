@@ -65,6 +65,14 @@ the same change.
 - Other machine: per-machine state per the wip-sync reference; the retired folder stays read-only there too.
 - Run `check-repo-registry.ps1` → green.
 
+### Retired folder later deleted from disk (precedent: BatchExportV1/V2; Dashboard 2026-10-06)
+
+- Check every PC's copy first: no unpushed commits, stash or tracked changes. Delete through the Recycle Bin on an interactive desktop; over ssh it hard-deletes.
+- `AGENTS.md` → drop the tree line; the retired table's *Was* cell says `(gone from disk)`.
+- `.gitignore` / `.ignore` → remove both entries. `profile.ps1` → remove the `$GSADUsRetiredRepos` entry (**gsadus-tools**).
+- Vault → `key-locations.md` row becomes `_(retired)_` (directory cell unbackticked, like BatchExport); `workspaces.md` keeps the row but drops the `.code-workspace` path and its `sources:` line; drop every `repo: ../<Folder>/…` source on other pages.
+- Run `check-repo-registry.ps1` → green.
+
 ## Boundaries
 
 - Never delete Vault pages — deprecate only. Never touch retired repos' content.

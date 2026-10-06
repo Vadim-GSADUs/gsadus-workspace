@@ -8,7 +8,6 @@ Each folder is an independent GitHub repo. Never nest projects inside one anothe
 C:\GSADUs\
 ├── AppSheetCatalog\      gsadus-appsheet-catalog       Google AppSheet catalog scripts
 ├── AppsScript\           gsadus-appsscript             Google Apps Script archive (clasp-managed)
-├── Dashboard\            (retired — see below)          Kept on disk as read-only reference
 ├── Helpdesk\             gsadus-helpdesk               Staff helpdesk: the GSADUs staff Google Chat app, its service and the `helpdesk` command
 ├── PM\                   gsadus-pm                     Internal PM/scheduling webapp (BuilderTrend replacement)
 ├── PostProcess\
@@ -35,7 +34,7 @@ C:\GSADUs\
 | `gsadus-digital-darkroom` | `PostProcess\DigitalDarkroom\` | 2026-07-07 | archived | PNGTools Darkroom workflow (`gsadus-png-tools`) |
 | `gsadus-darkroom-web` | `PostProcess\Darkroom\` | 2026-07-07 | archived | PNGTools outgrew it |
 | `gsadus-site-check` | `SiteCheck\` | 2026-08-06 | **deleted 2026-08-11** | The Site Check module ships from `gsadus-web-app`; its live contract is `WebApp\docs\site-check\SPEC.md` |
-| `gsadus-dashboard` | `Dashboard\` | 2026-10-06 | archived | Nothing (owner chose retirement over repair). Each repo's own CLI/GUI runs its pipeline steps; the per-repo `.pipeline/manifest.yaml` files were removed with it |
+| `gsadus-dashboard` | `Dashboard\` (gone from disk on both PCs) | 2026-10-06 | archived | Nothing (owner chose retirement over repair). Each repo's own CLI/GUI runs its pipeline steps; the per-repo `.pipeline/manifest.yaml` files were removed with it |
 
 The retired folders stay on disk read-only and are excluded from `setup.ps1`, `wip`/`unwip`
 (`$GSADUsRetiredRepos` in `Tools\ShellProfile\profile.ps1`) and `.env` sync. Do not extend them,
