@@ -79,9 +79,9 @@ gitignored env files (`WebApp\.env.local`, `PM\.env.local`, `WebCatalog\pipeline
 `PostProcess\PNGTools\.env`) are **rendered artifacts** — regenerate with `pull-env`
 (auto-chained after a clean `unwip-all`). Never hand-edit, copy between machines, or
 commit them, and never print their values into a transcript; edit in Doppler
-(dashboard or `doppler secrets set`), then `pull-env` on each machine. Vercel
-Production/Preview sync from Doppler `webapp/prd`/`stg`. Full spec, hygiene rules for
-agents, and the migration record: `Vault\wiki\curated\secrets-management.md`.
+(dashboard or `doppler secrets set`), then `pull-env` on each machine. Doppler syncs to
+Vercel Production for PM and Helpdesk; WebApp's projects (`gsadus`, `gsadus-site`) are hand-set.
+Full spec, agent hygiene and the sync table: `Vault\wiki\curated\secrets-management.md`.
 
 ## Production Error Triage — Sentry (one org, every project)
 
