@@ -42,10 +42,12 @@ never launches a second server while one is still starting.
 ## App containers: why every start goes through the task (2026-09-25)
 
 The Claude and Codex desktop apps are MSIX packages. A process started from inside one joins
-that app's job and file-system container. That includes a hook, an agent's tool shell, or
-the app's terminal panel. Windows kills the process when the app restarts or updates. New
-AppData folders the process creates land in `%LOCALAPPDATA%\Packages\<package>\LocalCache\`.
-Full root cause: `C:\GSADUs\Tools\ShellProfile\SETUP-VERIFICATION.md` → *Docker repair*.
+that app's job and file-system container. That includes a hook or an agent's tool shell;
+the Claude app's Terminal panel runs outside it (checked 2026-10-05). Windows kills the
+process when the app restarts or updates. New AppData folders the process creates land in
+`%LOCALAPPDATA%\Packages\<package>\LocalCache\`. AppData rules:
+`C:\GSADUs\Tools\ShellProfile\README.md` → *Desktop app containers*. Full root cause:
+`C:\GSADUs\Tools\ShellProfile\SETUP-VERIFICATION.md` → *Docker repair*.
 
 Before this change, the `SessionStart` hook ran `Start-AgentMail.ps1`, which launched the
 server with `Start-Process`. So any server a hook self-healed lived inside that session's
