@@ -19,7 +19,6 @@ $Root = "C:\GSADUs"
 $repos = @(
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsheet-catalog.git";   Path = "AppSheetCatalog" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-appsscript.git";         Path = "AppsScript" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-dashboard.git";          Path = "Dashboard" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-helpdesk.git";           Path = "Helpdesk" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-pm.git";                 Path = "PM" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-png-tools.git";          Path = "PostProcess\PNGTools" },
