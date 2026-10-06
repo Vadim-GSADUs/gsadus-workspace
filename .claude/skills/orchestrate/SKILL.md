@@ -25,6 +25,12 @@ repo code (owner decision 2026-10-05).
 2. **GSADUs only.** Sessions and folders outside `C:\GSADUs` are not the board's business.
 3. **One worker per thread per machine.** Parallel work on one repo goes in worktrees.
 4. **Link, never copy.** Repo detail stays in the repo; a note points at its doc.
+5. **A worker runs in its thread's repo** (owner 2026-10-06). The session starts at
+   `C:\GSADUs\<repo>`: the note's `project`, at its path in the workspace tree (`PNGTools` is
+   `PostProcess\PNGTools`). That way the repo's own `AGENTS.md`, skills (`/handoff`), hooks and
+   project memory load, and the sidebar groups the session with its repo. Only `Workspace`
+   threads and cross-repo work start at `C:\GSADUs`. A worktree goes under
+   `<repo>\.claude\worktrees\`; a workspace worktree can't edit sub-repo files.
 
 ## Intake: every owner message is one of these
 
@@ -42,9 +48,13 @@ repo code (owner decision 2026-10-05).
    exists and is not archived.
 2. Reuse it: send a self-contained brief (thread, goal, links to the docs, what done looks like)
    and ask to be told when it goes idle. If it is deep in another slice, ask the owner to run
-   `/compact` there first; you cannot compact another session.
+   `/compact` there first; you cannot compact another session. If the worker is running at
+   `C:\GSADUs` but its thread is single-repo, have it `change_directory` to its repo first
+   (rule 5).
 3. No usable worker: offer a new-session chip titled with the thread name
-   (`WebApp · switch day`); once it exists, add it to `workers` as `MACHINE · session-id`.
+   (`WebApp · switch day`), with `cwd` set to the thread's repo (rule 5). Without `cwd` the
+   chip starts here, at the workspace. Once it exists, add it to `workers` as
+   `MACHINE · session-id`.
 4. When a worker reports back, check that its `/handoff` updated the note; fix the note if not.
 
 ## Morning brief (on request, or the owner's first message of the day)
