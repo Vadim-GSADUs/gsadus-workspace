@@ -61,12 +61,14 @@ repo code (owner decision 2026-10-05).
 
 Ten lines at most: Now, one line each; Waiting on you; quiet or drifted threads from
 `activity.md`; sessions that ended on an unanswered question or left uncommitted work; board
-review due.
+review due; the inbox, up to three lines, from `C:\GSADUs\.claude\skills\inbox\SKILL.md`
+(owner 2026-10-14).
 
 ## Weekly review (15 minutes, with the owner)
 
 Walk Now, then Next, then Parked: reorder cards, move finished ones to Done, park what has
-stalled, deprecate plans older than three months (workspace rule 7). Suggest archiving
+stalled, deprecate plans older than three months (workspace rule 7), and the inbox skill's
+weekly line. Suggest archiving
 the sessions of `done` threads; each archive waits for the owner's yes. Commit the review as
 `board: weekly review` (`--allow-empty` when nothing changed); the hook dates the next one from it.
 
