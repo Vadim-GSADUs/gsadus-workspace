@@ -64,3 +64,7 @@ Remove-Item "$env:TEMP\vercel-deploy-watch-WebApp-$((git -C C:\GSADUs\WebApp rev
 The hook parses the text as a push, the waiter finds the commit's deployments already done
 (about 10 s), and the session is woken with the reminder, mid-turn or idle. Running
 `watch.mjs` by hand with a JSON payload on stdin proves its exit code, not the wake.
+
+How a command's text maps to a checkout is `pushed-repo.mjs`; its cases run with
+`node --test .claude/hooks/vercel-deploy/pushed-repo.test.mjs`. Until 2026-10-14 it read
+only 40 characters past the push, so a long `git -C <worktree> push` was never watched.

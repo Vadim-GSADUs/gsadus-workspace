@@ -12,31 +12,18 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { nativePath, pushedRepo } from './pushed-repo.mjs';
 
 const WAITER = 'C:/GSADUs/Tools/Vercel/Wait-Deployment.ps1';
 const PROJECTS = { webapp: 'WebApp', pm: 'PM' }; // repo folder → the waiter's -Project
 const BRANCH = 'main';
 
 const git = (args, cwd) => { try { return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return null; } };
-// Git Bash hands out /c/... paths; node on Windows needs C:/...
-const nativePath = (p) => p.replace(/^["']|["']$/g, '').replace(/^\/([a-zA-Z])\//, '$1:/');
-
-/** The repo a pushing command acted on (the last `cd` / `Set-Location` / `git -C` before
- *  `git push`, else the session cwd), or null when the command did not push. */
-export function pushedRepo(command, cwd) {
-  const at = command.search(/\bgit\s+(?:-C\s+\S+\s+)?push\b/);
-  if (at < 0 || /\bpush\b[^\n;&|]*--dry-run/.test(command)) return null;
-  const dirs = [...command.slice(0, at + 40).matchAll(/(?:\bcd|\bSet-Location|\bgit\s+-C)\s+("[^"]+"|'[^']+'|[^\s;&|]+)/g)].map((m) => nativePath(m[1]));
-  return {
-    dir: dirs.length ? path.resolve(cwd, dirs[dirs.length - 1]) : cwd,
-    namesMain: new RegExp(`\\bpush\\b[^\\n;&|]*(?:\\s|:)${BRANCH}\\b`).test(command),
-  };
-}
 
 let payload;
 try { payload = JSON.parse(fs.readFileSync(0, 'utf8') || '{}'); } catch { process.exit(0); }
 if (!['Bash', 'PowerShell'].includes(payload.tool_name)) process.exit(0);
-const push = pushedRepo(String(payload.tool_input?.command ?? ''), nativePath(payload.cwd || process.cwd()));
+const push = pushedRepo(String(payload.tool_input?.command ?? ''), nativePath(payload.cwd || process.cwd()), BRANCH);
 if (!push) process.exit(0);
 const top = git(['rev-parse', '--show-toplevel'], push.dir);
 if (!top) process.exit(0);
