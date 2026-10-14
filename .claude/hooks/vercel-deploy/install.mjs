@@ -15,12 +15,14 @@ export function mergeHook(config, script = SCRIPT) {
   const next = structuredClone(config);
   next.hooks ||= {};
   for (const [event, groups] of Object.entries(next.hooks)) {
-    next.hooks[event] = groups.map((group) => ({ ...group, hooks: group.hooks.filter((h) => !OURS.test(h.command || '')) }))
+    next.hooks[event] = groups.map((group) => ({ ...group, hooks: group.hooks.filter((h) => !OURS.test([h.command, ...(h.args ?? [])].join(' '))) }))
       .filter((group) => group.hooks.length);
   }
-  // asyncRewake: runs in the background and wakes the agent on exit 2 (the outcome).
+  // asyncRewake: runs in the background and wakes the agent on exit 2 (the outcome). Exec
+  // form (args, no shell), because through a shell the 2 never arrives: `shell: powershell`
+  // runs `pwsh -Command`, which turns a native exit 2 into 1 (README).
   (next.hooks.PostToolUse ||= []).push({ matcher: 'Bash|PowerShell', hooks: [{
-    type: 'command', command: `node "${script}" hook`, shell: 'powershell', asyncRewake: true, timeout: 1200,
+    type: 'command', command: 'node', args: [script, 'hook'], asyncRewake: true, timeout: 1200,
   }] });
   return next;
 }
