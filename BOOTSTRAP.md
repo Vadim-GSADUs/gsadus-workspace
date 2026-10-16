@@ -18,4 +18,4 @@ pwsh -File setup.ps1
 
 Open the Vault in Obsidian: `C:\GSADUs\Vault`
 
-Detailed setup instructions (profile, SSH, Revit addins, plugins): see `Vault\wiki\curated\setup-bootstrap.md`
+Detailed setup instructions (profile, SSH, plugins): see `Vault\wiki\curated\setup-bootstrap.md`

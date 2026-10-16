@@ -14,14 +14,10 @@
 /WebCatalog/
 
 # Temp / machine-specific
-*.addin
 *.tmp
 .wip-conflict.md
 # Revit crash-recovery dumps (journals, AddInsSettings) — never ferry
 Recovery/
-
-# Profile lives in $PROFILE on each machine, not in the repo
-profile.ps1
 
 # Workspace .claude/ IS tracked (hooks, skills, settings.json sync via git);
 # only the machine-local allowlist stays per-machine
