@@ -39,14 +39,18 @@ if (!sha) process.exit(0);
 if (git(['rev-parse', 'HEAD'], top) !== sha) process.exit(0);
 
 // One watcher per commit, however many sessions or settings files fire this hook. Locks
-// older than a day are swept, so the temp dir does not keep one per push.
+// older than a week are swept, so the temp dir does not keep one per push.
 const tmp = os.tmpdir();
 for (const name of fs.readdirSync(tmp).filter((n) => /^vercel-deploy-watch-.+\.lock$/.test(n))) {
-  try { if (Date.now() - fs.statSync(path.join(tmp, name)).mtimeMs > 86_400_000) fs.rmSync(path.join(tmp, name), { force: true }); } catch { /* raced */ }
+  try { if (Date.now() - fs.statSync(path.join(tmp, name)).mtimeMs > 7 * 86_400_000) fs.rmSync(path.join(tmp, name), { force: true }); } catch { /* raced */ }
 }
 const lock = path.join(tmp, `vercel-deploy-watch-${project}-${sha.slice(0, 12)}.lock`);
 try { if (Date.now() - fs.statSync(lock).mtimeMs < 30 * 60_000) process.exit(0); fs.rmSync(lock, { force: true }); } catch { /* no lock yet */ }
-try { fs.writeFileSync(lock, String(process.pid), { flag: 'wx' }); } catch { process.exit(0); }
+// The lock is also this watcher's record, so a lost wake can be told apart afterwards: no lock,
+// it never ran; no `exit`, it was killed first; `exit` 2 and no wake in the session's
+// transcript, Claude Code dropped it (README → Known limits).
+const record = { pid: process.pid, session: payload.session_id ?? null, started: new Date().toISOString() };
+try { fs.writeFileSync(lock, JSON.stringify(record), { flag: 'wx' }); } catch { process.exit(0); }
 
 const run = spawnSync('pwsh', ['-NoProfile', '-NonInteractive', '-File', WAITER, '-Project', project, '-Commit', sha], { encoding: 'utf8' });
 let report;
@@ -60,4 +64,5 @@ const summary = report?.deployments
   ? `${run.status === 0 ? 'deployed' : 'FAILED'} ${project} ${sha.slice(0, 7)} after ${report.elapsedSeconds}s: ${report.deployments.map(said).join('; ')}`
   : `NOT READY ${project} ${sha.slice(0, 7)}: ${(run.stderr || run.error?.message || `waiter exit ${run.status}`).trim().split('\n').slice(-2).join(' | ')}`;
 process.stderr.write(`Vercel production deploy (hook): ${summary}\n`);
+try { fs.writeFileSync(lock, JSON.stringify({ ...record, ended: new Date().toISOString(), waiter: run.status, exit: 2, summary })); } catch { /* the wake matters more */ }
 process.exit(2); // wake the agent with the outcome, deployed or not

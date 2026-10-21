@@ -31,7 +31,8 @@ reported it ([WebApp 9922bbbe](https://github.com/Vadim-GSADUs/gsadus-web-app/co
   started with `run_in_background`, leaves `origin/main` on an older commit, and the hook
   stays quiet. Push in the foreground to be watched.
 - One watcher per commit: a lock in the temp dir (`vercel-deploy-watch-<repo>-<sha12>.lock`)
-  skips repeats for 30 minutes; locks older than a day are swept.
+  skips repeats for 30 minutes; locks older than a week are swept. The lock is also the
+  watcher's record (Known limits).
 
 ## Install (per machine)
 
@@ -82,8 +83,8 @@ push landed at 00:01:15 and the turn ended at 00:01:24. At 00:05:00 a memory-pre
 evicted the session, idle and out of view for 129 s. The App went READY at 00:06:29. A
 message resumed the session at 00:09:43, and no wake came. The app's own log shows each
 eviction: `%LOCALAPPDATA%\Claude\Logs\main.log`, lines `[CliGovernor] pressure evicting
-<session>` and `Pausing session <session> (governor_evict)`. The lock file holds the dead
-watcher's pid. The cause is the app's behaviour, not the hook's. That night the probe above
+<session>` and `Pausing session <session> (governor_evict)`. The cause is the app's
+behaviour, not the hook's. That night the probe above
 woke a spawned-task session through the PowerShell tool in 8 s (Claude Code 2.1.304), so
 neither the session type nor the shell matters.
 
@@ -91,3 +92,14 @@ A session waiting on a deploy may have been evicted or restarted. In that case, 
 waiter by hand (AGENTS.md → Deployment readiness). There is no second delivery path, by
 design (workspace rule 6). The fix is the app's: keep a session alive while one of its
 `asyncRewake` hooks is still running. The owner holds a draft upstream report (2026-10-21).
+
+**Telling a lost wake apart.** Since 2026-10-21 each lock holds its watcher's record as JSON:
+`pid`, `session` (the transcript is `<session>.jsonl`) and `started`. Just before its exit 2
+the watcher adds `ended`, `waiter` (the waiter's exit code), `exit` and the wake's `summary`.
+Find the lock for a landed push that never woke, in `%TEMP%` on the PC that pushed:
+
+| Lock for that commit | Class | Earlier case |
+|---|---|---|
+| none | the hook never ran or stood down | the 40-character parser, until 2026-10-14 |
+| no `exit`, `pid` dead | the watcher was killed first | the governor eviction, 2026-10-21 |
+| `exit: 2`, no wake in the transcript | the finished wake was not delivered | `pwsh -Command` turned 2 into 1, 2026-09-23 to 10-14 |
