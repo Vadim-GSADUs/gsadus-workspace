@@ -68,3 +68,26 @@ The hook parses the text as a push, the waiter finds the commit's deployments al
 How a command's text maps to a checkout is `pushed-repo.mjs`; its cases run with
 `node --test .claude/hooks/vercel-deploy/pushed-repo.test.mjs`. Until 2026-10-14 it read
 only 40 characters past the push, so a long `git -C <worktree> push` was never watched.
+
+## Known limits
+
+**The wake lives only as long as the pushing session's CLI process.** The desktop app runs
+each Code-tab session as its own `claude.exe`, and the waiter runs as that process's child.
+If the process ends before the deploy is done, the wake is lost and nothing reports it. The
+app might quit, update or restart, the session might be stopped, or the app's memory governor
+might evict it. A resumed session is a new process that knows nothing of the waiter.
+
+The governor caused the one loss seen so far (2026-10-21, VG-HOME, WebApp `a1d6d02e`). The
+push landed at 00:01:15 and the turn ended at 00:01:24. At 00:05:00 a memory-pressure warning
+evicted the session, idle and out of view for 129 s. The App went READY at 00:06:29. A
+message resumed the session at 00:09:43, and no wake came. The app's own log shows each
+eviction: `%LOCALAPPDATA%\Claude\Logs\main.log`, lines `[CliGovernor] pressure evicting
+<session>` and `Pausing session <session> (governor_evict)`. The lock file holds the dead
+watcher's pid. The cause is the app's behaviour, not the hook's. That night the probe above
+woke a spawned-task session through the PowerShell tool in 8 s (Claude Code 2.1.304), so
+neither the session type nor the shell matters.
+
+A session waiting on a deploy may have been evicted or restarted. In that case, run the
+waiter by hand (AGENTS.md → Deployment readiness). There is no second delivery path, by
+design (workspace rule 6). The fix is the app's: keep a session alive while one of its
+`asyncRewake` hooks is still running. The owner holds a draft upstream report (2026-10-21).
