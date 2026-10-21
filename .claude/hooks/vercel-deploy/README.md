@@ -64,7 +64,9 @@ Remove-Item "$env:TEMP\vercel-deploy-watch-WebApp-$((git -C C:\GSADUs\WebApp rev
 
 The hook parses the text as a push, the waiter finds the commit's deployments already done
 (about 10 s), and the session is woken with the reminder, mid-turn or idle. Running
-`watch.mjs` by hand with a JSON payload on stdin proves its exit code, not the wake.
+`watch.mjs` by hand with a JSON payload on stdin proves its exit code, not the wake. The
+probe replaces that commit's lock, which is its push's record (Known limits). If that push
+never woke, copy the lock before you probe.
 
 How a command's text maps to a checkout is `pushed-repo.mjs`; its cases run with
 `node --test .claude/hooks/vercel-deploy/pushed-repo.test.mjs`. Until 2026-10-14 it read
@@ -96,7 +98,9 @@ design (workspace rule 6). The fix is the app's: keep a session alive while one 
 **Telling a lost wake apart.** Since 2026-10-21 each lock holds its watcher's record as JSON:
 `pid`, `session` (the transcript is `<session>.jsonl`) and `started`. Just before its exit 2
 the watcher adds `ended`, `waiter` (the waiter's exit code), `exit` and the wake's `summary`.
-Find the lock for a landed push that never woke, in `%TEMP%` on the PC that pushed:
+Find the lock for a landed push that never woke, in `%TEMP%` on the PC that pushed. Its
+`session` must be the pushing session's; any other id means a probe or a repeat push
+replaced the record.
 
 | Lock for that commit | Class | Earlier case |
 |---|---|---|
