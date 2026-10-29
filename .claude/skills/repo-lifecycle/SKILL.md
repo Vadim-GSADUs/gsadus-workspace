@@ -31,7 +31,7 @@ the same change.
 - `.ignore` → matching `!<Folder>/` negation so root search reaches the new repo.
 - `GSADUs.code-workspace` → folder entry (skip only with a documented reason — pyRevit is the precedent).
 - Vault `wiki/curated/workspaces.md` → registry row; follow its "How to add a new workspace" for the hub page + frontmatter.
-- Vault `wiki/curated/key-locations.md` → Local Repos row (directory, GitHub name, one-line purpose, hub wikilink). Keyed on the **repo**, not the workspace file — a repo with no `.code-workspace` still needs this row.
+- Vault `wiki/curated/key-locations.md` → Local Repos row (directory, GitHub name, one-line purpose, hub wikilink). Keyed on the **repo**, not the workspace file — a repo with no `.code-workspace` still needs this row. A repo the shared Vault must not name (the owner's private Vault) gets its row in `Vault\private\wiki\curated\key-locations-private.md` instead.
 - Vault decision-log → drafted row (a new repo meets the majors-only bar).
 - Other machine: `unwip-all` clones it via setup.ps1; per-machine state per the wip-sync reference below.
 - Run `check-repo-registry.ps1` → green.

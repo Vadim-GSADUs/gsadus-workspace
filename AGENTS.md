@@ -19,7 +19,8 @@ C:\GSADUs\
 ├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
 ├── Studio\               gsadus-studio                 Interior Studio: Blender-rendered kitchen/bath rooms re-skinned from the Design Bundles catalog
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
-├── Vault\                gsadus-vault                  Obsidian knowledge vault
+├── Vault\                gsadus-vault                  Obsidian knowledge vault, shared with staff (org gsadus; read-only here)
+│   └── private\          gsadus-vault-private          The owner's private Vault, nested: board, scan scripts, personal pages
 ├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
 ├── WebCatalog\           gsadus-web-catalog            Web catalog of ADU models (Next.js + Supabase + GCS)
 ├── setup.ps1                                           Clones all repos to this structure
@@ -167,16 +168,16 @@ is not enabled. File leases remain **advisory**. The worktree-per-agent rule sti
 
 ## Project Context — The Vault
 
-All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions.
+All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions. The Vault is split (owner 2026-10-28): `Vault\` is the shared `gsadus/gsadus-vault`, which staff read and only its maintainer writes (never commit there); the owner's PCs nest the private Vault at `Vault\private\` (`gsadus-vault-private`, rules in its `AGENTS.md`; a local `Vault\.ignore` keeps it searchable).
 
 Key vault pages:
-- `Vault\Board.md` — **the board** (owner 2026-10-05): the one global view of planned work, a
-  note per thread in `Vault\board\threads\` that links to repo docs, never copies them. Only
-  the owner opens a thread; the session working one updates it at `/handoff`. Rules:
-  `Vault\AGENTS.md` → Board. Session-start hook: `node .claude\hooks\board\install.mjs --apply`.
-- `Vault\wiki\curated\key-locations.md` — all file paths and machine hostnames
+- `Vault\private\Board.md` — **the board** (owner 2026-10-05): the one global view of planned
+  work, a note per thread in `Vault\private\board\threads\` that links to repo docs, never copies
+  them. Only the owner opens a thread; the session working one updates it at `/handoff`. Rules:
+  `Vault\private\AGENTS.md` → Board. Session-start hook: `node .claude\hooks\board\install.mjs --apply`.
+- `Vault\wiki\curated\key-locations.md` — all file paths (hostnames: `Vault\private\wiki\curated\key-locations-private.md`)
 - `Vault\wiki\auto\pipeline-image-export.md` — end-to-end image pipeline
-- `Vault\wiki\curated\wip-sync.md` — cross-PC sync workflow
+- `Vault\private\wiki\curated\wip-sync.md` — cross-PC sync workflow
 
 When starting a new session, read the relevant vault pages for context rather than expecting standalone docs at this root level.
 

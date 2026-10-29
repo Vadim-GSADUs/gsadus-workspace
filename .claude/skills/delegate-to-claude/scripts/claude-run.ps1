@@ -3,7 +3,7 @@
 claude-run.ps1 — launch a non-interactive Claude Code session from any harness.
 
 Companion to ..\SKILL.md (delegate-to-claude). Same pattern as Tools\ShellProfile\profile.ps1
-Invoke-WipConflictAgent and Vault\scripts\wiki-scan.ps1 — the owner's rules for scripted
+Invoke-WipConflictAgent and Vault\private\scripts\wiki-scan.ps1 — the owner's rules for scripted
 launches: pre-grant scoped permissions (2026-07-14) and run the account's default model, with
 no --model pin (2026-09-30). -Model overrides the model for one launch.
 

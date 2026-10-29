@@ -13,7 +13,8 @@ Surfaces cross-checked:
   - .ignore                     (search re-include negations: coverage + dead entries)
   - GSADUs.code-workspace       (hub folder roots vs $repos)
   - Vault\wiki\curated\workspaces.md registry <-> *.code-workspace files on disk
-  - Vault\wiki\curated\key-locations.md Local Repos table <-> setup.ps1 $repos + retired-on-disk
+  - Vault\wiki\curated\key-locations.md Local Repos table (+ the private Vault's
+    key-locations-private.md rows, when on disk) <-> setup.ps1 $repos + retired-on-disk
   - Vault\wiki\curated\workspace-<name>.md hub pages <-> *.code-workspace files on disk
   - AGENTS.md / CLAUDE.md pair per repo root (agent-harness convention, 2026-09-05):
     AGENTS.md canonical, CLAUDE.md line 1 = @AGENTS.md, no .agents/ or .codex/ dirs,
@@ -41,7 +42,8 @@ Exit 0 = all surfaces consistent. Exit 1 = drift (each mismatch named). Exit 2 =
 param([string]$Root = 'C:\GSADUs')
 
 $GroupingFolders  = @('PostProcess')   # folders that contain repos but are not repos
-$HubExcludedRepos = @('pyRevit')       # absent from GSADUs.code-workspace by design
+# Absent from GSADUs.code-workspace by design; Vault/private nests inside Vault, whose hub folder shows it
+$HubExcludedRepos = @('pyRevit', 'Vault/private')
 $GitignoreNonRepo = @('Recovery')      # preventive ignores allowed to not exist on disk
 
 $drift = [System.Collections.Generic.List[string]]::new()
@@ -53,7 +55,12 @@ $searchIgnorePath = Join-Path $Root '.ignore'
 $hubWsPath    = Join-Path $Root 'GSADUs.code-workspace'
 $registryPath = Join-Path $Root 'Vault/wiki/curated/workspaces.md'
 $keyLocPath   = Join-Path $Root 'Vault/wiki/curated/key-locations.md'
+# The shared Vault never names the owner's private repo (Vault split, 2026-10-28), so its Local
+# Repos row lives in the private companion page, read when the private Vault is on disk.
+$keyLocPrivatePath = Join-Path $Root 'Vault/private/wiki/curated/key-locations-private.md'
 $hubDir       = Join-Path $Root 'Vault/wiki/curated'
+# The retired workspaces' deprecated hub pages moved to the private Vault with the split.
+$hubDirs      = @($hubDir) + @(Join-Path $Root 'Vault/private/wiki/curated' | Where-Object { Test-Path -LiteralPath $_ })
 
 foreach ($f in @($setupPath, $profilePath, $gitignorePath, $searchIgnorePath, $hubWsPath, $registryPath, $keyLocPath)) {
     if (-not (Test-Path -LiteralPath $f)) { Write-Error "Required input missing: $f"; exit 2 }
@@ -202,7 +209,12 @@ $m = [regex]::Match($keyLocRaw, '(?ms)^##\s+Local Repos\b.*?(?=^##\s|\z)')
 if (-not $m.Success) {
     Write-Error "Could not find the '## Local Repos' section in $keyLocPath"; exit 2
 }
-$keyLocRows = @([regex]::Matches($m.Value, '(?m)^\|\s*`([^`|]+?)/`\s*\|') |
+$localRepoSections = @($m.Value)
+if (Test-Path -LiteralPath $keyLocPrivatePath) {
+    $pm = [regex]::Match((Get-Content -LiteralPath $keyLocPrivatePath -Raw), '(?ms)^##\s+Local Repos\b.*?(?=^##\s|\z)')
+    if ($pm.Success) { $localRepoSections += $pm.Value }
+}
+$keyLocRows = @($localRepoSections | ForEach-Object { [regex]::Matches($_, '(?m)^\|\s*`([^`|]+?)/`\s*\|') } |
                 ForEach-Object { ($_.Groups[1].Value -replace '\\', '/').Trim() })
 if ($keyLocRows.Count -eq 0) {
     Write-Error "Could not parse any Local Repos rows from $keyLocPath"; exit 2
@@ -224,7 +236,7 @@ foreach ($k in $keyLocRows) {
 # ── Vault workspace-<name>.md hub pages vs *.code-workspace files on disk ────
 # A registry row existing is not the same as the hub page it links to existing.
 $hubSourced = [System.Collections.Generic.List[string]]::new()
-foreach ($hub in (Get-ChildItem -LiteralPath $hubDir -Filter 'workspace-*.md' -File)) {
+foreach ($hub in ($hubDirs | ForEach-Object { Get-ChildItem -LiteralPath $_ -Filter 'workspace-*.md' -File })) {
     $hubRaw = Get-Content -LiteralPath $hub.FullName -Raw
     foreach ($m in [regex]::Matches($hubRaw, '(?im)^\s*-\s*repo:\s*\.\./(\S.*?\.code-workspace)\s*$')) {
         $hubSourced.Add((([IO.Path]::GetFullPath((Join-Path $Root $m.Groups[1].Value))).Replace('\','/')).ToLowerInvariant())

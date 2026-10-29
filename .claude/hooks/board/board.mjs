@@ -1,5 +1,5 @@
 // Board context at session start: the owner's Now threads and open asks from the Vault board
-// (Vault AGENTS.md → Board), so every session under C:\GSADUs starts knowing what is in flight.
+// (Vault\private AGENTS.md → Board), so every session under C:\GSADUs starts knowing what is in flight.
 // Shared by Claude Code and Codex, installed per machine by install.mjs. Node.js 18+, no
 // dependencies. Silent outside the workspace and when nothing is open; never blocks a session.
 //   node board.mjs hook   # SessionStart: reads the hook JSON on stdin, prints hook JSON
@@ -10,7 +10,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const WORKSPACE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const VAULT = path.join(WORKSPACE, 'Vault');
+// The board lives in the owner's private Vault, nested in the shared one (Vault split, 2026-10-28).
+const VAULT = path.join(WORKSPACE, 'Vault', 'private');
 const REVIEW_DAYS = 7;
 
 const unquote = (s) => s.trim().replace(/^(["'])(.*)\1$/, '$2');
@@ -113,7 +114,7 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
   if (!lines.length && !due) return '';
   if (due) lines.push(`Board review due: last reviewed ${reviewed}.`);
   return [
-    'Board (C:\\GSADUs\\Vault\\Board.md; threads in Vault\\board\\threads\\, schema in Vault\\AGENTS.md → Board):',
+    'Board (C:\\GSADUs\\Vault\\private\\Board.md; threads in Vault\\private\\board\\threads\\, schema in Vault\\private\\AGENTS.md → Board):',
     ...lines,
     'If this session works on one of these threads, its /handoff updates that note. Only the owner opens new threads. ' +
       'Mention the owner\'s asks for this repo, or an overdue review, in one line when relevant.',

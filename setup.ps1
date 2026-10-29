@@ -26,7 +26,9 @@ $repos = @(
     @{ Url = "git@github.com:gsadus/gsadus-shared.git";                   Path = "Shared" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-studio.git";           Path = "Studio" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-tools.git";              Path = "Tools" },
-    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault.git";              Path = "Vault" },
+    @{ Url = "git@github.com:gsadus/gsadus-vault.git";                    Path = "Vault" },
+    # The owner's private Vault nests inside the shared one, so it clones after it (Vault split, 2026-10-28)
+    @{ Url = "git@github.com:Vadim-GSADUs/gsadus-vault-private.git";      Path = "Vault\private" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-app.git";            Path = "WebApp" },
     @{ Url = "git@github.com:Vadim-GSADUs/gsadus-web-catalog.git";        Path = "WebCatalog" }
 )

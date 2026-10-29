@@ -52,4 +52,4 @@ pwsh -File C:\GSADUs\.claude\skills\delegate-to-claude\scripts\claude-run.ps1 `
   the first real Codex-side run; record the outcome here.
 - `--bare` is announced to become the `-p` default in a future Claude Code release. When it
   lands, add the explicit non-bare flag to `claude-run.ps1` and re-verify — the same watch as
-  Vault `scripts/wiki-scan.ps1`.
+  the private Vault's `scripts/wiki-scan.ps1`.

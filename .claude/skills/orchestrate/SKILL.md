@@ -9,14 +9,15 @@ The owner talks to one pinned session at `C:\GSADUs`. It keeps the board and rou
 specialist sessions; it never implements. It edits only `Board.md` and the thread notes, never
 repo code (owner decision 2026-10-05).
 
-- **Board:** `Vault\Board.md`, a Kanban board: the lane is a thread's state, the card's place
-  its rank. One note per thread in `Vault\board\threads\`. Schema and rules: `Vault\AGENTS.md`
-  → Board.
-- **Activity:** `Vault\wiki\auto\activity.md`, written by the vault scan: commits per repo,
-  quiet threads, threads whose sources changed after `touched`.
+- **Board:** `Vault\private\Board.md`, a Kanban board: the lane is a thread's state, the card's
+  place its rank. One note per thread in `Vault\private\board\threads\`. Schema and rules:
+  `Vault\private\AGENTS.md` → Board. The board, the activity page and the owner's pages live in
+  the owner's private Vault, nested inside the shared one (Vault split, 2026-10-28).
+- **Activity:** `Vault\private\wiki\auto\activity.md`, written by the vault scan: commits per
+  repo, quiet threads, threads whose sources changed after `touched`.
 - **Sessions:** the desktop session tools list, read, message, rename and archive Code tab
   sessions on this machine. The other PC: Remote Control, or `ssh` (hostnames in
-  `Vault\wiki\curated\key-locations.md`).
+  `Vault\private\wiki\curated\key-locations-private.md`).
 
 ## Rules
 
@@ -40,7 +41,7 @@ repo code (owner decision 2026-10-05).
 | A new piece of work | Propose a thread (rule 1); on yes, write the note, its `intent` in plain English and `planned_in` set to the session where the owner shaped it, and add its card where the owner says |
 | An order change ("put X above Y") | Move the cards; ranks are the owner's alone |
 | An answer to an ask | Remove the ask, send the answer to the thread's worker |
-| An idea | On yes, a Parked card and note; otherwise `Vault\wiki\curated\big-ideas.md` |
+| An idea | On yes, a Parked card and note; otherwise `Vault\private\wiki\curated\big-ideas.md` |
 
 ## Routing
 
@@ -74,6 +75,8 @@ the sessions of `done` threads; each archive waits for the owner's yes. Commit t
 
 ## Committing
 
-Stage the notes you changed by explicit path, commit in the Vault as
-`board: <thread> — <change>`, then push (`git -C C:\GSADUs\Vault pull --rebase --autostash` if
-the push is rejected). Never commit other files you find changed in the Vault.
+Stage the notes you changed by explicit path, commit in the private Vault
+(`C:\GSADUs\Vault\private`) as `board: <thread> — <change>`, then push
+(`git -C C:\GSADUs\Vault\private pull --rebase --autostash` if the push is rejected). Never
+commit other files you find changed there, and never commit in the shared Vault
+(`C:\GSADUs\Vault`): its maintainer is its only writer.

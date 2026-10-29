@@ -4,7 +4,7 @@ type: audit
 maintained: agent
 status: active
 sources:
-  - C:\GSADUs\Vault\wiki\curated\skill-audit-prompt.md
+  - C:\GSADUs\Vault\private\wiki\curated\skill-audit-prompt.md
 last_reviewed: 2026-07-18
 tags: [claude-code, skills, agents, hooks, audit, workspace, vault]
 ---
