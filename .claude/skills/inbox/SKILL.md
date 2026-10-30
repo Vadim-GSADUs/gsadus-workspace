@@ -38,7 +38,10 @@ options: `C:\GSADUs\Tools\Inbox\README.md`.
    - **review / receipt?:** read the subject and snippet, and `-Body <id>` only when needed.
      A person writing is a `needs`; a vendor notice is `watch` or noise. A confirmed receipt
      is forwarded with `gws gmail +forward --message-id <id> --to accounting@gsadus.com` and
-     given the `Forwarded to accounting` label.
+     given the `Forwarded to accounting` label. A receipt is a document accounting can file
+     as it stands: a charge with its amount, readable without signing in. A billing notice is
+     not one, so it's never forwarded (owner 2026-10-30). That covers seat or plan changes,
+     prorated or upcoming charges, and a link into the vendor's admin billing page.
    - Tie each `needs` item to its board thread or Tech Dev task when one exists, and say what
      happens if it is ignored, and by when.
 3. Write at most three lines in the brief, for example:
