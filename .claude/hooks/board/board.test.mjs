@@ -96,6 +96,8 @@ test('scanAlert is silent while the scan is fresh and names a stall', () => {
     assert.equal(scanAlert(path.join(dir, 'missing.yml'), now), '');
     write(['last_attempt_status: success-changes', 'last_attempt_reason: ""', 'last_success_utc: 2026-11-15T01:07:18Z']);
     assert.equal(scanAlert(file, now), '');
+    write(['last_attempt_status: abort-preamble', 'last_attempt_reason: "an account other than the owner\'s wrote"', 'last_success_utc: 2026-11-15T01:07:18Z']);
+    assert.match(scanAlert(file, now), /^Vault scan: the last run on this PC did not finish: abort-preamble \(an account other than the owner's wrote\)\. Tell/);
     write(['last_attempt_status: success-changes', 'last_attempt_reason: ""', 'last_success_utc: 2026-11-03T01:07:18Z']);
     assert.match(scanAlert(file, now), /^Vault scan stalled: no successful run since 2026-11-03\. The reason is in the scan PC's log/);
     write(['last_attempt_status: failure-runtime', 'last_attempt_reason: "claude sign-in failed"', 'last_success_utc: 2026-11-03T01:07:18Z']);

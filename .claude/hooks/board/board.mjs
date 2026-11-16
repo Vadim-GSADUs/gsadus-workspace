@@ -76,20 +76,25 @@ const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 // The Vault scan's heartbeat (Vault\private\scripts\LASTRUN.yml, written by wiki-scan.ps1). Only a
 // successful run is pushed, so a last success older than the heartbeat's own bar means the daily
-// scan has stalled; on the scan PC the file also holds the failed attempt and its reason. One line,
-// '' while the scan is fresh (2026-11: an expired sign-in failed 13 daily runs before anyone saw).
+// scan has stalled; on the scan PC the file also holds the failed attempt and its reason, and a
+// failed latest run shows at once (the launcher stops on a leak or on a write by another account).
+// One line, '' while the scan is fresh (2026-11: an expired sign-in failed 13 daily runs unseen).
 export function scanAlert(file = path.join(VAULT, 'scripts', 'LASTRUN.yml'), now = new Date()) {
   let hb;
   try { hb = frontmatter(`---\n${fs.readFileSync(file, 'utf8')}\n---`); } catch { return ''; }
   const last = Date.parse(text(hb.last_success_utc));
   const bar = Number(text(hb.expected_max_age_hours)) || 48;
-  if (Number.isFinite(last) && (now - last) / 3600000 <= bar) return '';
-  const since = Number.isFinite(last) ? `no successful run since ${text(hb.last_success_utc).slice(0, 10)}` : 'no successful run on record';
+  const fresh = Number.isFinite(last) && (now - last) / 3600000 <= bar;
   const status = text(hb.last_attempt_status);
-  const failed = status && !status.startsWith('success')
-    ? ` Last attempt on this PC: ${status}${text(hb.last_attempt_reason) && ` (${clip(text(hb.last_attempt_reason), 140)})`}.`
+  const why = text(hb.last_attempt_reason) && ` (${clip(text(hb.last_attempt_reason), 220)})`;
+  const failed = status && !status.startsWith('success');
+  if (fresh && !failed) return '';
+  if (fresh) return `Vault scan: the last run on this PC did not finish: ${status}${why}. Tell the owner in one line.`;
+  const since = Number.isFinite(last) ? `no successful run since ${text(hb.last_success_utc).slice(0, 10)}` : 'no successful run on record';
+  const attempt = failed
+    ? ` Last attempt on this PC: ${status}${why}.`
     : ' The reason is in the scan PC\'s log (Vault\\private\\scripts\\logs) and in wiki/auto/activity.md.';
-  return `Vault scan stalled: ${since}.${failed} Tell the owner in one line.`;
+  return `Vault scan stalled: ${since}.${attempt} Tell the owner in one line.`;
 }
 
 // The repo a cwd belongs to, named as threads name projects: WebApp, PNGTools, Workspace.
