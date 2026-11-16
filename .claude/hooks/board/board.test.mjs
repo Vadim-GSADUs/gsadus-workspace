@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { frontmatter, lanes, lastReview, projectOf, summary } from './board.mjs';
+import { frontmatter, lanes, lastReview, projectOf, scanAlert, summary } from './board.mjs';
 import { mergeHook } from './install.mjs';
 
 const note = [
@@ -84,6 +84,24 @@ test('lastReview dates the latest weekly-review commit', () => {
     git(['commit', '-q', '--allow-empty', '-m', 'board: PM · b — next step'], '2026-10-01T10:00:00');
     assert.equal(lastReview(dir), '2026-09-28');
     assert.equal(lastReview(path.join(dir, 'missing')), '');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('scanAlert is silent while the scan is fresh and names a stall', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scan-'));
+  const file = path.join(dir, 'LASTRUN.yml');
+  const now = new Date('2026-11-16T20:00:00Z');
+  const write = (lines) => fs.writeFileSync(file, ['# heartbeat', 'schema: 1', 'expected_max_age_hours: 48', ...lines].join('\r\n'));
+  try {
+    assert.equal(scanAlert(path.join(dir, 'missing.yml'), now), '');
+    write(['last_attempt_status: success-changes', 'last_attempt_reason: ""', 'last_success_utc: 2026-11-15T01:07:18Z']);
+    assert.equal(scanAlert(file, now), '');
+    write(['last_attempt_status: success-changes', 'last_attempt_reason: ""', 'last_success_utc: 2026-11-03T01:07:18Z']);
+    assert.match(scanAlert(file, now), /^Vault scan stalled: no successful run since 2026-11-03\. The reason is in the scan PC's log/);
+    write(['last_attempt_status: failure-runtime', 'last_attempt_reason: "claude sign-in failed"', 'last_success_utc: 2026-11-03T01:07:18Z']);
+    assert.match(scanAlert(file, now), /Last attempt on this PC: failure-runtime \(claude sign-in failed\)\. Tell the owner in one line\.$/);
+    write(['last_attempt_status: abort-preamble', 'last_attempt_reason: ""', 'last_success_utc: ']);
+    assert.match(scanAlert(file, now), /no successful run on record\. Last attempt on this PC: abort-preamble\. Tell/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
