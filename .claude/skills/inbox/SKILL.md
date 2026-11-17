@@ -5,9 +5,8 @@ description: Triage the owner's work mail (vadim@gsadus.com) for the morning bri
 
 # inbox — the morning brief's mail check
 
-Set up 2026-10-14 (owner, inbox-assistant session). The owner's mail is mostly subscription,
-deploy and vendor notices; this check surfaces the few that need them. Tooling and its
-options: `C:\GSADUs\Tools\Inbox\README.md`.
+The owner's mail is mostly subscription, deploy and vendor notices; this check surfaces the
+few that need them. Tooling and its options: `C:\GSADUs\Tools\Inbox\README.md`.
 
 ## Hard rules
 
@@ -67,8 +66,6 @@ and work through it:
   QuickBooks Workforce. Also never a person, or a vendor's billing or deploy notices. Unsubscribe
   from a product's marketing address only, for example Vercel's ship@info.vercel.com, never its
   notification address.
-
-The first sweep, on 2026-10-26, removed 24 senders and kept the nine above.
 
 ## Weekly review: one line
 

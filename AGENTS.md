@@ -64,14 +64,11 @@ owner holds 3009 use 3111 (also fully allowlisted).
 
 ## Workspace Sync Protocol (wip / unwip)
 
-`unwip-all` is self-healing: it syncs the workspace root first (so `setup.ps1` is current), then calls `setup.ps1 -CloneOnly` to clone any missing repos before unwipping the rest.
-
-**When adding or removing a repo:**
-1. Update `setup.ps1` on the source machine and commit it (via `wip-all` or a real commit).
-2. On the receiving machine, `unwip-all` detects and clones the missing repo automatically — no manual steps needed.
-3. If `unwip-all` still misses a repo (e.g. fresh machine with no profile yet), run `setup.ps1` manually.
-
-**Agent rule:** When asked to sync a receiving machine, always run `unwip-all` — do not assume the repo list is already complete. If `unwip-all` reports a repo as missing after running, run `setup.ps1` on that machine.
+`unwip-all` heals itself: it syncs the workspace root first (so `setup.ps1` is current), then
+`setup.ps1 -CloneOnly` clones any missing repo before the rest is unwipped. To sync a receiving
+machine, always run `unwip-all`; if it still reports a repo as missing (a fresh machine with no
+profile yet), run `setup.ps1` there. Adding or removing a repo: follow the repo-lifecycle skill
+(`.claude\skills\repo-lifecycle\SKILL.md`).
 
 ## Secrets — Doppler (adopted 2026-08-25)
 
@@ -109,42 +106,37 @@ A push of `main` in WebApp or PM is watched automatically: a user-level Claude C
 
 ## Agent Harnesses — one instruction set (owner decision 2026-09-05)
 
-The owner runs both Claude Code and the Codex app on these repos, deliberately. Both read
-the same files; nothing is duplicated per harness:
+The owner runs both Claude Code and the Codex app on these repos. Both read the same files:
 
-- **`AGENTS.md` is the canonical, tool-neutral instruction file** at every repo root and at
-  this workspace root. Rule text lives there and nowhere else.
-- **`CLAUDE.md` beside it is `@AGENTS.md` plus Claude-Code-only operating notes** — never
-  rule text. Reading a `CLAUDE.md` with a file tool shows the literal `@AGENTS.md` line, so
-  when told to read a repo's rules, read its `AGENTS.md`.
-- **Skills have one copy: `.claude/skills/<name>/SKILL.md`.** Claude Code auto-loads them
+- **`AGENTS.md` is the one rule file** at every repo root and at this workspace root. Rule
+  text lives there and nowhere else.
+- **`CLAUDE.md` beside it is `@AGENTS.md` plus Claude-Code-only notes**, never rule text. A
+  file tool shows only the literal `@AGENTS.md` line, so when told to read a repo's rules,
+  read its `AGENTS.md`.
+- **Skills have one copy: `.claude/skills/<name>/SKILL.md`.** Claude Code loads them itself
   (workspace skills only in sessions started at `C:\GSADUs`); every other harness reads the
-  relevant `SKILL.md` before the task. Never create `.agents/` or `.codex/` directories —
-  the Codex app's *Import from another agent* sync wrote substituted copies there on
-  2026-09-05; its repo-writing categories (Instructions, Skills, Commands, Hooks, Agents)
-  are off on both PCs for that reason. Only chats, plugins, MCP servers and memory sync,
-  and those land in `~\.codex`, never in a repo.
+  relevant `SKILL.md` before the task. Never create `.agents/` or `.codex/` directories, and
+  keep the Codex app's import categories that write into a repo (Instructions, Skills,
+  Commands, Hooks, Agents) off on both PCs.
 - Codex's instruction chain stops at each repo's git root, so a sub-repo `AGENTS.md` points
-  here (`C:\GSADUs\AGENTS.md`) for the workspace rules; Claude Code walks the directory
-  tree and reaches this file on its own.
+  here (`C:\GSADUs\AGENTS.md`) for the workspace rules.
 - The Next.js managed block (`nextjs-agent-rules`) lives in `AGENTS.md` only, committed.
-- **Cross-harness delegation runs through the shell, never through imported agent
-  definitions:** Codex → Claude via `.claude\skills\delegate-to-claude\SKILL.md`; Claude
-  sessions do not delegate to Codex (owner 2026-11-17). The caller reviews every diff.
+- **Cross-harness delegation runs through the shell:** Codex → Claude via
+  `.claude\skills\delegate-to-claude\SKILL.md`; Claude sessions do not delegate to Codex
+  (owner 2026-11-17). The caller reviews every diff.
 - **A scripted `claude` launch names no versioned model id** (owner 2026-11-17): no `--model`
   by default, so the account default runs; a plainly light job (checks, extraction) may name
   a tier alias (`haiku`, `sonnet`, `opus`), never a dated or numbered id.
-- **Instruction files stay lean** (owner decision 2026-09-05): an `AGENTS.md` holds only what
-  an agent cannot derive — owner decisions and contracts, environment facts (ports, secrets,
-  deploy disciplines), and pointers to binding docs and skills. Not architecture or file maps
-  (read the tree), not shipped-slice narrative (git has it), not one-time incidents (those go
-  to the repo's HANDOFF Gotchas with its date ratchet, or to agent memory), not guardrails
-  written for weaker models. Cap: 200 lines per `AGENTS.md`, enforced by the registry check;
-  a file near the cap means content belongs in its binding doc, not in a tighter rewrap.
+- **Instruction files stay lean:** an `AGENTS.md` holds only what an agent cannot derive:
+  owner decisions and contracts, environment facts (ports, secrets, deploy disciplines), and
+  pointers to binding docs and skills. Architecture, shipped-slice history and one-time
+  incidents belong in the tree, git, the repo's HANDOFF Gotchas or agent memory. Cap: 200
+  lines per `AGENTS.md`, enforced by the registry check; a file near the cap moves content
+  to its binding doc.
 
 Repo add/rename/retire/archive: follow `.claude\skills\repo-lifecycle\SKILL.md` and finish
-with its `scripts\check-repo-registry.ps1` green — it also enforces this convention. Full
-spec, evidence, and the options weighed: `Vault\wiki\curated\agent-harnesses.md`.
+with its `scripts\check-repo-registry.ps1` green, which also enforces this convention. Full
+spec and evidence: `Vault\wiki\curated\agent-harnesses.md`.
 
 ### Agent Mail — the channel between concurrent sessions (owner decision 2026-09-14)
 
