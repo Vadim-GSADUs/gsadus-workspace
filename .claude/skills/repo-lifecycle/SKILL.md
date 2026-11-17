@@ -81,6 +81,6 @@ the same change.
 
 ## References (read at need — never restate their content here)
 
-- Vault `wiki/curated/wip-sync.md` → **"Claude Code machine-local state (NOT synced by git or wip)"** — memory migration and per-machine config after any rename/retire.
+- Private Vault `Vault\private\wiki\curated\wip-sync.md` → **"Claude Code machine-local state (NOT synced by git or wip)"** — memory migration and per-machine config after any rename/retire.
 - Vault `wiki/curated/workspaces.md` → **"How to add a new workspace"** — hub-page + registry procedure.
 - Vault `wiki/curated/agent-harnesses.md` → the `AGENTS.md` / `CLAUDE.md` / `.claude/skills` convention that `check-repo-registry.ps1` enforces on every repo root.

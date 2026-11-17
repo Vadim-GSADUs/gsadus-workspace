@@ -15,14 +15,14 @@ C:\GSADUs\
 │   ├── DigitalDarkroom\  (retired — see below)          Kept on disk as read-only reference
 │   └── PNGTools\         gsadus-png-tools              Desktop image tool: batch PNG prep + Darkroom AI render
 ├── pyRevit\              gsadus-pyrevit                pyRevit extension — GSADUs Tools tab
-├── Shared\               gsadus-shared                 Shared internal npm packages (GitHub Packages; @gsadus/pipedrive)
+├── Shared\               gsadus-shared                 Shared internal npm packages (GitHub Packages; @gsadus/pipedrive, @gsadus/divisions)
 ├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
 ├── Studio\               gsadus-studio                 Interior Studio: Blender-rendered kitchen/bath rooms re-skinned from the Design Bundles catalog
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
 ├── Vault\                gsadus-vault                  Obsidian knowledge vault, shared with staff (org gsadus; the owner moderates)
 │   └── private\          gsadus-vault-private          The owner's private Vault, nested: board, scan scripts, personal pages
-├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
-├── WebCatalog\           gsadus-web-catalog            Web catalog of ADU models (Next.js + Supabase + GCS)
+├── WebApp\               gsadus-web-app                The public Site (apps/site) and the staff App: design bundles, cost estimator, proposals, site check
+├── WebCatalog\           gsadus-web-catalog            Catalog data pipeline for ADU models (Python → Supabase + GCS); holds every app's migrations
 ├── setup.ps1                                           Clones all repos to this structure
 └── GSADUs.code-workspace                               VS Code / Cursor multi-root workspace
 ```
@@ -54,7 +54,7 @@ MCP/CLI environment may claim it). No web app binds 3000, ever.
 
 | Repo | Primary | Agent/second server | e2e | Notes |
 |---|---|---|---|---|
-| `WebApp` | 3009 | 3010 (non-signed-in only) | 3111 | `npm run dev` pins 3009. Maps key + `gsadus-web-catalog` OAuth allow 3009/3111 + both ts.net hosts; 3010 is NOT in either (Codex/agent work that needs no Maps/OAuth). Build-block hook guards 3000–3010. |
+| `WebApp` | 3009 | 3010 (non-signed-in only) | 3111 | `npm run dev` pins 3009. Maps key + `gsadus-web-catalog` OAuth allow 3009/3111 + both ts.net hosts; 3010 is NOT in either (Codex/agent work that needs no Maps/OAuth). Build-block hook guards 3000–3010 and the Site's 3019 (`npm run dev:site`). |
 | `PM` | 3200 | 3209 | 3211 | PM authenticates via the `gsadus-web-catalog` Supabase project (2026-08-24 merge); its allowlist covers all three PM ports (catalog Site URL unchanged). Never run PM inside 3000–3010 — it trips WebApp's build-block hook. |
 | `Helpdesk` | 3300 | 3309 (no sign-in) | 3311 | `bin/dev.ts` serves the ticket pages (2026-10-02). Its own Google OAuth client ("GSADUs helpdesk") allows only 3300's `/auth/callback` besides production. |
 

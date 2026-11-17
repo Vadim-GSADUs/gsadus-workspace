@@ -7,8 +7,7 @@ file holds only what Claude Code alone acts on.
 
 - Workspace skills (`.claude\skills\*\SKILL.md`) auto-load only in sessions started at
   `C:\GSADUs`; from a sub-repo session, read the SKILL.md directly.
-- `.claude\settings.json` runs two SessionStart hooks: the current date/time, and the
-  unresolved wip-conflict banner (`C:\GSADUs\.wip-conflict.md`). `settings.local.json` is the
+- `.claude\settings.json` holds the workspace hooks; `settings.local.json` is the
   machine-local allowlist (gitignored).
 - Vercel deploys are watched by a user-level hook (per machine; install or repair with
   `node .claude\hooks\vercel-deploy\install.mjs --apply`): after any `git push` of `main` in a
