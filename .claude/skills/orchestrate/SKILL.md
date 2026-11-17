@@ -78,5 +78,6 @@ the sessions of `done` threads; each archive waits for the owner's yes. Commit t
 Stage the notes you changed by explicit path, commit in the private Vault
 (`C:\GSADUs\Vault\private`) as `board: <thread> — <change>`, then push
 (`git -C C:\GSADUs\Vault\private pull --rebase --autostash` if the push is rejected). Never
-commit other files you find changed there, and never commit in the shared Vault
-(`C:\GSADUs\Vault`): its maintainer is its only writer.
+commit other files you find changed there. Board files never go in the shared Vault
+(`C:\GSADUs\Vault`); a shared page is committed there only through its pre-commit hook
+(`Vault\private\AGENTS.md` → Agent rules).

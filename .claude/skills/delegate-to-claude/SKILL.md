@@ -5,17 +5,17 @@ description: Launch a non-interactive Claude Code session on the account's defau
 
 # delegate-to-claude — a headless Claude session from any harness
 
-The mirror image of Claude → Codex delegation (WebApp `CLAUDE.md`, *Implementation style*:
-`codex exec` through the openai-codex plugin). Cross-harness orchestration always runs through
-the shell; an imported agent definition cannot do it — a Codex custom agent is an OpenAI model
-with Codex's tools, whatever its prompt says (Vault `wiki/curated/agent-harnesses.md`).
+The one cross-harness route (workspace `AGENTS.md` → Agent Harnesses): Claude sessions do not
+delegate to Codex (owner 2026-11-17). It runs through the shell; an imported agent definition
+cannot do it — a Codex custom agent is an OpenAI model with Codex's tools, whatever its prompt
+says (Vault `wiki/curated/agent-harnesses.md`).
 
 ## Run
 
 ```powershell
 pwsh -File C:\GSADUs\.claude\skills\delegate-to-claude\scripts\claude-run.ps1 `
     -Repo C:\GSADUs\PM -BriefFile .\brief.md
-# or: -Brief "…" · -Model <id> · -Effort high · -AllowedTools Read,Glob,Grep · -OutputFormat json · -DryRun
+# or: -Brief "…" · -Model <tier alias> · -Effort high · -AllowedTools Read,Glob,Grep · -OutputFormat json · -DryRun
 ```
 
 - `-Repo` is the working directory. The session starts there, so that repo's `CLAUDE.md`
@@ -24,7 +24,8 @@ pwsh -File C:\GSADUs\.claude\skills\delegate-to-claude\scripts\claude-run.ps1 `
 - **The brief is the whole context** — the delegate sees no chat history. State the goal, the
   files, the docs to read first, the verification command, and what to report back.
 - Defaults follow the owner's rules for scripted launches: no `--model` pin, so the session
-  runs the account's default model (2026-09-30; `-Model <id>` overrides one launch);
+  runs the account's default model (2026-09-30; for a plainly light job `-Model` may name a
+  tier alias, `haiku`, `sonnet` or `opus`, never a dated or numbered id, owner 2026-11-17);
   pre-granted scoped permissions (2026-07-14): `--permission-mode acceptEdits` and an explicit
   `--allowedTools` list; and `--setting-sources user,project,local` (a non-bare `-p` session —
   under `--bare`, OAuth and instruction discovery are skipped).

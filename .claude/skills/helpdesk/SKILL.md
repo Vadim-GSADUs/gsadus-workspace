@@ -120,8 +120,8 @@ new ones):
 ## Working an approved ticket (you orchestrate)
 
 The approved spec is the brief. You decide how it is worked: by you, or split across
-sub-agents (Claude subagents, or Codex through `codex exec`, openai-codex plugin; the reverse
-direction uses the `delegate-to-claude` skill). Brief each from the spec, never from the
+sub-agents (a Claude session uses Claude subagents; a Codex session hands work to Claude
+through the `delegate-to-claude` skill). Brief each from the spec, never from the
 ticket's raw text, and review every sub-agent's diff before it lands.
 1. `helpdesk claim <n> --as <harness>:<name>`. The claim records who works it (the ticket's
    "Worked by"), and the first claim wins; if it's taken, stop. A sub-agent working the whole

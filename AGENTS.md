@@ -19,7 +19,7 @@ C:\GSADUs\
 ├── SiteCheck\            (retired — see below)          Kept on disk as read-only reference
 ├── Studio\               gsadus-studio                 Interior Studio: Blender-rendered kitchen/bath rooms re-skinned from the Design Bundles catalog
 ├── Tools\                gsadus-tools                  Office workflow utilities (.exe / PS1)
-├── Vault\                gsadus-vault                  Obsidian knowledge vault, shared with staff (org gsadus; read-only here)
+├── Vault\                gsadus-vault                  Obsidian knowledge vault, shared with staff (org gsadus; the owner moderates)
 │   └── private\          gsadus-vault-private          The owner's private Vault, nested: board, scan scripts, personal pages
 ├── WebApp\               gsadus-web-app                Internal platform app: design bundles, cost estimator, models prototype
 ├── WebCatalog\           gsadus-web-catalog            Web catalog of ADU models (Next.js + Supabase + GCS)
@@ -129,9 +129,11 @@ the same files; nothing is duplicated per harness:
   tree and reaches this file on its own.
 - The Next.js managed block (`nextjs-agent-rules`) lives in `AGENTS.md` only, committed.
 - **Cross-harness delegation runs through the shell, never through imported agent
-  definitions:** Claude → Codex via the openai-codex plugin (`codex exec`, foreground);
-  Codex → Claude via `.claude\skills\delegate-to-claude\SKILL.md` (a pinned, non-interactive
-  `claude -p` launch). The caller reviews every delegated diff before it lands.
+  definitions:** Codex → Claude via `.claude\skills\delegate-to-claude\SKILL.md`; Claude
+  sessions do not delegate to Codex (owner 2026-11-17). The caller reviews every diff.
+- **A scripted `claude` launch names no versioned model id** (owner 2026-11-17): no `--model`
+  by default, so the account default runs; a plainly light job (checks, extraction) may name
+  a tier alias (`haiku`, `sonnet`, `opus`), never a dated or numbered id.
 - **Instruction files stay lean** (owner decision 2026-09-05): an `AGENTS.md` holds only what
   an agent cannot derive — owner decisions and contracts, environment facts (ports, secrets,
   deploy disciplines), and pointers to binding docs and skills. Not architecture or file maps
@@ -168,7 +170,7 @@ is not enabled. File leases remain **advisory**. The worktree-per-agent rule sti
 
 ## Project Context — The Vault
 
-All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions. The Vault is split (owner 2026-10-28): `Vault\` is the shared `gsadus/gsadus-vault`, which staff read and only its maintainer writes (never commit there); the owner's PCs nest the private Vault at `Vault\private\` (`gsadus-vault-private`, rules in its `AGENTS.md`; a local `Vault\.ignore` keeps it searchable).
+All project context, workflows, planning, gaps, and tool documentation lives in the **Obsidian Vault** at `C:\GSADUs\Vault\`. Read `Vault\AGENTS.md` for the vault schema and frontmatter conventions. The Vault is split (owner 2026-10-28): `Vault\` is the shared `gsadus/gsadus-vault`, which staff read and the owner moderates: the owner's own sessions commit shared pages there through its pre-commit hook, and anyone else's change is a proposal the owner reviews before it merges (owner 2026-11-17; `Vault\private\AGENTS.md` → Agent rules); the owner's PCs nest the private Vault at `Vault\private\` (`gsadus-vault-private`, rules in its `AGENTS.md`; a local `Vault\.ignore` keeps it searchable).
 
 Key vault pages:
 - `Vault\private\Board.md` — **the board** (owner 2026-10-05): the one global view of planned
