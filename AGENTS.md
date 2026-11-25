@@ -79,6 +79,11 @@ gitignored env files (`WebApp\.env.local`, `PM\.env.local`, `WebCatalog\pipeline
 commit them, and never print their values into a transcript; edit in Doppler
 (dashboard or `doppler secrets set`), then `pull-env` on each machine. Doppler syncs to
 Vercel Production for PM and Helpdesk; WebApp's projects (`gsadus`, `gsadus-site`) are hand-set.
+**Before creating a Google service account, key or credential variable** (owner 2026-11-25):
+one account per app per kind of access (Drive grants, Vertex, Chat app, GCS; one per Workspace
+delegation), never per feature. Extend the app's existing account of that kind; a new one only
+when the app or the kind of access differs. The rule and every account's row:
+`Vault\wiki\curated\infrastructure-registry.md` (Google identity register).
 Full spec, agent hygiene and the sync table: `Vault\wiki\curated\secrets-management.md`.
 
 ## Production Error Triage — Sentry (one org, every project)
