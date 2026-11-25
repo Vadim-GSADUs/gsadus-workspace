@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { frontmatter, lanes, lastReview, projectOf, scanAlert, summary } from './board.mjs';
+import { egressAlert, frontmatter, lanes, lastReview, projectOf, scanAlert, summary } from './board.mjs';
 import { mergeHook } from './install.mjs';
 
 const note = [
@@ -104,6 +104,21 @@ test('scanAlert is silent while the scan is fresh and names a stall', () => {
     assert.match(scanAlert(file, now), /Last attempt on this PC: failure-runtime \(claude sign-in failed\)\. Tell the owner in one line\.$/);
     write(['last_attempt_status: abort-preamble', 'last_attempt_reason: ""', 'last_success_utc: ']);
     assert.match(scanAlert(file, now), /no successful run on record\. Last attempt on this PC: abort-preamble\. Tell/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('egressAlert is silent under the limit and names an over-limit day or a stopped check', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'egress-'));
+  const file = path.join(dir, 'check.log');
+  const line = (mb, verdict) => `client-facing: 83 MB estimated → ${mb} MB/day billed-equivalent (×1.5); limit 500 MB/day → ${verdict}`;
+  try {
+    assert.equal(egressAlert(path.join(dir, 'missing.log')), '');
+    fs.writeFileSync(file, ['an older block', line('612', 'OVER'), 'top statements', line('124', 'OK'), 'top statements'].join('\r\n'));
+    assert.equal(egressAlert(file), '');
+    fs.appendFileSync(file, '\r\n' + line('1,204', 'OVER') + '\r\n      1.8 MB  webapp_service ...');
+    assert.match(egressAlert(file), /^Supabase egress alarm: the last daily check read 1,204 MB\/day against its 500 MB\/day limit\. Tell/);
+    fs.writeFileSync(file, line('124', 'OK'));
+    assert.match(egressAlert(file, new Date(Date.now() + 5 * 86400000)), /^Supabase egress check has not run for 5 days/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

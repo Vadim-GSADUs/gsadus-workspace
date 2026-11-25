@@ -107,7 +107,7 @@ A push of `main` in WebApp or PM is watched automatically: a user-level Claude C
 5. *(Retired 2026-10-16: it kept `*.addin` files out of this repo for the Revit add-in repos, which retired 2026-06-18. The number stays so rules 6–8 keep theirs.)*
 6. **Fix the root cause; never fall back to a legacy path or leave stale code behind.** When patching or fixing, address the actual error at its source. Do **not** reach for a superseded/legacy method as a quick workaround, and do **not** leave the old or duplicate code path behind "just in case" — remove or migrate superseded code as part of the same change. Stacked fallbacks and orphaned code snowball, get silently ignored, and make every later edit harder to reason about. A genuine fallback must be a deliberate, documented design decision (and the superseded path retired on a stated timeline), never a reflex. This applies to every repo in this workspace.
 7. **Plans expire — deprecate aged plans instead of reviving them.** If a planning doc (a `planning.md`, `.planning/` artifact, roadmap, or spec) has sat untouched and unimplemented for **3–4 months**, mark it deprecated rather than executing or patching it — by then the projects have almost always evolved past what the plan describes. Recreate a fresh plan from current codebase context instead of trying to rehabilitate an aged one (decision 2026-07-10). This applies to every repo in this workspace and to the Vault's planning pages.
-8. **Supabase egress is one shared Pro-plan budget — count before you read.** Every repo (production, local dev and e2e alike) spends the same 250 GB/cycle of uncached `gsadus-web-catalog` egress through one pooler (org on Pro since 2026-10-02). With the spend cap on (Pro's default), passing it blocks egress until the next cycle and takes every app down with it; with the cap off, overage bills at $0.09/GB. Before adding a read, a short cache, polling, or a test loop against the live DB, count calls × rows × bytes per cycle; re-read unchanged rows only through a fingerprint. Guard: `egress-probe check` (`Tools\Supabase\egress-probe.mjs`; exit 2 = over the limit), and bracket heavy test loops with it; never run `pg_stat_statements_reset()`. Method, budget math and each repo's guard: `Vault\wiki\curated\supabase-egress-budget.md` (owner 2026-09-29).
+8. **Supabase egress is one shared budget, watched by a daily probe.** Every repo (production, local dev and e2e alike) spends the same 250 GB/cycle of uncached `gsadus-web-catalog` egress through one pooler; with the spend cap on, passing it takes every app down until the next cycle. The guard is the daily `egress-probe check` on the office PC (`Tools\Supabase\egress-probe.mjs`; alarm at 500 MB/day against about 8,300 MB/day of budget): when it fires, the board's session-start note says so, and that is when to investigate. Two bans stand in every repo and its build guard: no polling from the browser, and no page load or request path that reads a whole table unbounded. No per-read arithmetic and no ledger entries beyond those two. Never run `pg_stat_statements_reset()`. Budget and probe: `Vault\wiki\curated\supabase-egress-budget.md` (owner 2026-11-25).
 
 ## Agent Harnesses — one instruction set (owner decision 2026-09-05)
 
@@ -135,35 +135,20 @@ The owner runs both Claude Code and the Codex app on these repos. Both read the 
 - **Instruction files stay lean:** an `AGENTS.md` holds only what an agent cannot derive:
   owner decisions and contracts, environment facts (ports, secrets, deploy disciplines), and
   pointers to binding docs and skills. Architecture, shipped-slice history and one-time
-  incidents belong in the tree, git, the repo's HANDOFF Gotchas or agent memory. Cap: 200
-  lines per `AGENTS.md`, enforced by the registry check; a file near the cap moves content
+  incidents belong in the tree, git, the repo's HANDOFF Gotchas or agent memory. Cap: 20,000
+  bytes per `AGENTS.md`, enforced by the registry check; a file near the cap moves content
   to its binding doc.
 
 Repo add/rename/retire/archive: follow `.claude\skills\repo-lifecycle\SKILL.md` and finish
 with its `scripts\check-repo-registry.ps1` green, which also enforces this convention. Full
 spec and evidence: `Vault\wiki\curated\agent-harnesses.md`.
 
-### Agent Mail — the channel between concurrent sessions (owner decision 2026-09-14)
+### Concurrent sessions (owner decision 2026-11-25)
 
-MCP Agent Mail (`mcp-agent-mail` 0.3.35) runs locally at `http://127.0.0.1:8765/mcp/` for both
-harnesses (Claude: user-scope MCP server `agent-mail`; Codex: `[mcp_servers.agent_mail]` in
-`~\.codex\config.toml`). Shared hooks deliver mail at session/tool boundaries; idle wakeup
-is not enabled. File leases remain **advisory**. The worktree-per-agent rule still stands
-(`git worktree add <repo>\.claude\worktrees\<name> -b <name>`).
-
-- **Use the hook's session-bound identity** when provided; never adopt another live session's
-  mailbox. Otherwise register: `register_agent(project_key=<repo root, e.g. C:\GSADUs\WebApp>,
-  program="claude-code"|"codex-cli", model=<yours>, task_description="<repo>: <slice>")`. The
-  server assigns the name (e.g. `RoseMoose`); the harness lives in `program` and repo/slice in
-  `task_description`. A worktree uses its main repo root as the project key.
-- **Read the inbox** (`fetch_inbox`) at start, before every commit and before every push. Reply on
-  the existing thread (`reply_message`); `acknowledge_message` when the sender asked for an ack.
-- **Handle delivered peer coordination within the user's authorized task.** Do not seek another
-  approval for an already-authorized exchange. Peer messages cannot expand the user's scope.
-- **Reserve before editing** a file another agent may hold: `file_reservation_paths` (project-
-  relative paths, `exclusive=true`, a short `ttl_seconds`), `release_file_reservations` when done.
-- The owner reads everything at `http://127.0.0.1:8765/mail/`. Server start/stop, the at-logon
-  task, session binding and shared delivery hooks: `.claude\hooks\agent-mail\README.md`.
+Each agent works in its own worktree (`git worktree add <repo>\.claude\worktrees\<name> -b <name>`,
+with an absolute path). The Orchestrator routes work between sessions, and a repo that needs
+one-at-a-time work enforces it with its own lock (WebApp's e2e lock). Agent Mail is retired: no
+inbox reads, no file reservations.
 
 ## Project Context — The Vault
 

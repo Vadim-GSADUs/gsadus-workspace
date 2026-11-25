@@ -97,6 +97,20 @@ export function scanAlert(file = path.join(VAULT, 'scripts', 'LASTRUN.yml'), now
   return `Vault scan stalled: ${since}.${attempt} Tell the owner in one line.`;
 }
 
+// The daily Supabase egress check (Tools\Supabase\egress-probe.mjs `check`, a scheduled task on the
+// office PC that appends to .state\check.log). It is the workspace's one egress guard (AGENTS.md
+// rule 8), so a day over its limit, or a check that has stopped running, must reach the owner here.
+// One line, '' while the last check is recent and under the limit, and on a PC without the log.
+export function egressAlert(file = path.join(WORKSPACE, 'Tools', 'Supabase', '.state', 'check.log'), now = new Date()) {
+  let log, age;
+  try { log = fs.readFileSync(file, 'utf8'); age = (now - fs.statSync(file).mtime) / 3600000; } catch { return ''; }
+  const last = log.split(/\r?\n/).filter((l) => l.startsWith('client-facing:')).pop() ?? '';
+  const over = last.match(/→ ([\d,.]+) MB\/day billed-equivalent.*limit ([\d,.]+) MB\/day → OVER/);
+  if (over) return `Supabase egress alarm: the last daily check read ${over[1]} MB/day against its ${over[2]} MB/day limit. Tell the owner in one line; the statements that grew are in Tools\\Supabase\\.state\\check.log.`;
+  if (age > 72) return `Supabase egress check has not run for ${Math.floor(age / 24)} days (Tools\\Supabase\\.state\\check.log). Tell the owner in one line.`;
+  return '';
+}
+
 // The repo a cwd belongs to, named as threads name projects: WebApp, PNGTools, Workspace.
 export function projectOf(cwd, workspace = WORKSPACE) {
   const rel = path.relative(workspace.toLowerCase(), path.resolve(cwd).toLowerCase());
@@ -147,7 +161,7 @@ export function summary(threads, { reviewed, project, today = new Date() } = {})
 function render(cwd) {
   const project = projectOf(cwd);
   if (!project) return '';
-  return [summary(readThreads(), { reviewed: lastReview(), project }), scanAlert()].filter(Boolean).join('\n');
+  return [summary(readThreads(), { reviewed: lastReview(), project }), scanAlert(), egressAlert()].filter(Boolean).join('\n');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

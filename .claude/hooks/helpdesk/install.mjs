@@ -1,7 +1,7 @@
 // Register the helpdesk status line as a SessionStart hook for Claude Code (user settings) and
-// Codex (user hooks.json) on this machine. Every session under C:\GSADUs, including sub-repos
-// and worktrees, then opens with e.g. "Helpdesk: 2 new (1 blocking) · 1 to approve". The
-// handler stays silent when nothing is open or when the session is outside the workspace.
+// Codex (user hooks.json) on this machine. A session at the workspace root or in the Helpdesk repo
+// (their worktrees included) then opens with e.g. "Helpdesk: 2 new (1 blocking) · 1 to approve". The
+// handler stays silent when nothing is open and in every other directory, before it reads anything.
 // Only this handler is touched; every unrelated hook and setting is kept.
 //   node C:\GSADUs\.claude\hooks\helpdesk\install.mjs          # show the plan
 //   node C:\GSADUs\.claude\hooks\helpdesk\install.mjs --apply  # write it (timestamped backups first)

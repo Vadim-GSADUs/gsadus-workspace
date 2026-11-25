@@ -6,7 +6,7 @@ const CLI = 'C:\\GSADUs\\Helpdesk\\bin\\helpdesk.ts';
 const unrelated = {
   model: 'x',
   hooks: {
-    SessionStart: [{ hooks: [{ type: 'command', command: 'node "C:\\GSADUs\\.claude\\hooks\\agent-mail\\delivery.mjs" hook claude-code' }] }],
+    SessionStart: [{ hooks: [{ type: 'command', command: 'node "C:\\GSADUs\\.claude\\hooks\\board\\board.mjs" hook' }] }],
     PostToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'node watch.mjs hook' }] }],
   },
 };

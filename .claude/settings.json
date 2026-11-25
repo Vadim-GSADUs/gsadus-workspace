@@ -22,53 +22,6 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\GSADUs\\.claude\\hooks\\agent-mail\\delivery.mjs\" hook claude-code",
-            "timeout": 15,
-            "shell": "powershell"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\GSADUs\\.claude\\hooks\\agent-mail\\delivery.mjs\" hook claude-code",
-            "timeout": 15,
-            "shell": "powershell"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\GSADUs\\.claude\\hooks\\agent-mail\\delivery.mjs\" hook claude-code",
-            "timeout": 15,
-            "shell": "powershell"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"C:\\GSADUs\\.claude\\hooks\\agent-mail\\delivery.mjs\" hook claude-code",
-            "timeout": 15,
-            "shell": "powershell"
-          }
-        ]
       }
     ]
   }
